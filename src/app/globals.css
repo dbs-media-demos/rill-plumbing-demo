@@ -200,6 +200,17 @@ html.lenis body {
   display: inline-block;
   animation: rise-in 1.2s var(--ease-out-expo) var(--d, 0s) both;
 }
+@keyframes hero-zoom {
+  from {
+    transform: scale(1.12);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+.hero-zoom {
+  animation: hero-zoom 2.4s var(--ease-out-expo) both;
+}
 .anim-drop {
   animation: drop-in 1.4s var(--ease-out-expo) var(--d, 0s) both;
 }
