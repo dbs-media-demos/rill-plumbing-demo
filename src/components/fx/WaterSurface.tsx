@@ -304,22 +304,39 @@ export function WaterSurface({ src, srcSmall, className, interactive = true }: P
     const ric: (cb: () => void, o?: { timeout: number }) => number =
       window.requestIdleCallback?.bind(window) ?? ((cb: () => void) => window.setTimeout(cb, 400));
     const cic: (h: number) => void = window.cancelIdleCallback?.bind(window) ?? window.clearTimeout;
-    const handle = ric(
-      () => {
-        if (cancelled) return;
-        const img = new Image();
-        img.decoding = "async";
-        img.src = window.innerWidth < 768 && srcSmall ? srcSmall : src;
-        img.onload = () => {
-          if (!cancelled) cleanup = start(img);
-        };
-        img.onerror = () => setState("fallback");
-      },
-      { timeout: 2500 },
-    );
+    const boot = () => {
+      if (cancelled) return;
+      const img = new Image();
+      img.decoding = "async";
+      img.src = window.innerWidth < 768 && srcSmall ? srcSmall : src;
+      img.onload = () => {
+        if (!cancelled) cleanup = start(img);
+      };
+      img.onerror = () => setState("fallback");
+    };
+    let handle = 0;
+    // Phones: the static photo is already on screen, so wake the water on the first
+    // touch/scroll (or after 5 s) to keep the main thread free during load.
+    const coarse = window.matchMedia("(pointer: coarse)").matches;
+    const wake = () => {
+      window.removeEventListener("pointerdown", wake);
+      window.removeEventListener("scroll", wake);
+      window.clearTimeout(timer);
+      if (!handle) handle = ric(boot, { timeout: 2500 });
+    };
+    const timer = coarse ? window.setTimeout(wake, 5000) : 0;
+    if (coarse) {
+      window.addEventListener("pointerdown", wake, { passive: true, once: true });
+      window.addEventListener("scroll", wake, { passive: true, once: true });
+    } else {
+      handle = ric(boot, { timeout: 2500 });
+    }
     return () => {
       cancelled = true;
-      cic(handle);
+      window.clearTimeout(timer);
+      window.removeEventListener("pointerdown", wake);
+      window.removeEventListener("scroll", wake);
+      if (handle) cic(handle);
       cleanup?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
