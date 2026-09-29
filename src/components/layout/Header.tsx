@@ -69,10 +69,13 @@ export function Header() {
     };
   }, [pathname]);
 
-  useEffect(() => {
+  // Close menus on navigation (adjust state during render instead of in an effect).
+  const [lastPath, setLastPath] = useState(pathname);
+  if (pathname !== lastPath) {
+    setLastPath(pathname);
     setOpen(false);
     setMega(false);
-  }, [pathname]);
+  }
 
   useEffect(() => {
     document.documentElement.style.overflow = open ? "hidden" : "";

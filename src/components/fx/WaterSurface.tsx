@@ -65,37 +65,6 @@ export function WaterSurface({ src, srcSmall, className, interactive = true }: P
   const canvas = useRef<HTMLCanvasElement>(null);
   const [state, setState] = useState<"idle" | "live" | "fallback">("idle");
 
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setState("fallback");
-      return;
-    }
-    let cleanup: (() => void) | undefined;
-    let cancelled = false;
-    const ric: (cb: () => void, o?: { timeout: number }) => number =
-      window.requestIdleCallback?.bind(window) ?? ((cb: () => void) => window.setTimeout(cb, 400));
-    const cic: (h: number) => void = window.cancelIdleCallback?.bind(window) ?? window.clearTimeout;
-    const handle = ric(
-      () => {
-        if (cancelled) return;
-        const img = new Image();
-        img.decoding = "async";
-        img.src = window.innerWidth < 768 && srcSmall ? srcSmall : src;
-        img.onload = () => {
-          if (!cancelled) cleanup = start(img);
-        };
-        img.onerror = () => setState("fallback");
-      },
-      { timeout: 2500 },
-    );
-    return () => {
-      cancelled = true;
-      cic(handle);
-      cleanup?.();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [src, srcSmall]);
-
   function start(image: HTMLImageElement): (() => void) | undefined {
     const el = canvas.current;
     if (!el) return;
@@ -323,6 +292,38 @@ export function WaterSurface({ src, srcSmall, className, interactive = true }: P
       gl.deleteProgram(prog);
     };
   }
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- media query is client-only
+      setState("fallback");
+      return;
+    }
+    let cleanup: (() => void) | undefined;
+    let cancelled = false;
+    const ric: (cb: () => void, o?: { timeout: number }) => number =
+      window.requestIdleCallback?.bind(window) ?? ((cb: () => void) => window.setTimeout(cb, 400));
+    const cic: (h: number) => void = window.cancelIdleCallback?.bind(window) ?? window.clearTimeout;
+    const handle = ric(
+      () => {
+        if (cancelled) return;
+        const img = new Image();
+        img.decoding = "async";
+        img.src = window.innerWidth < 768 && srcSmall ? srcSmall : src;
+        img.onload = () => {
+          if (!cancelled) cleanup = start(img);
+        };
+        img.onerror = () => setState("fallback");
+      },
+      { timeout: 2500 },
+    );
+    return () => {
+      cancelled = true;
+      cic(handle);
+      cleanup?.();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src, srcSmall]);
 
   return (
     <div aria-hidden className={clsx("absolute inset-0 overflow-hidden", className)}>

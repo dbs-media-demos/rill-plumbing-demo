@@ -295,6 +295,16 @@ html.lenis body {
   animation: cta-ring 3.3s var(--ease-out-expo) infinite;
 }
 
+@keyframes drain-swirl {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.drain-swirl {
+  animation: drain-swirl 18s linear infinite;
+  transform-origin: 50% 50%;
+}
+
 @keyframes caustic-drift {
   0% {
     transform: translate3d(0, 0, 0) scale(1.1);

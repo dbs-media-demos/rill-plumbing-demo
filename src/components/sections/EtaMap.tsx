@@ -43,7 +43,7 @@ export function EtaMap() {
   const [zipError, setZipError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const { contextSafe } = useGSAP(
+  useGSAP(
     () => {
       const reduce = prefersReducedMotion();
       vans.forEach((v, i) => {
@@ -82,7 +82,7 @@ export function EtaMap() {
     { scope: root },
   );
 
-  const dispatch = contextSafe((city: City) => {
+  function dispatch(city: City) {
     const map = svg.current;
     if (!map || busy) return;
     // Resume any van that was sent out before.
@@ -133,7 +133,7 @@ export function EtaMap() {
         { scale: 3.2, opacity: 0, duration: 1.2, repeat: 2, ease: "expo.out" },
         1.6,
       );
-  });
+  }
 
   // Count the ETA up whenever a new result lands.
   useGSAP(

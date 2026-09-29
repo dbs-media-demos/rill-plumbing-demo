@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import clsx from "clsx";
 import { work, type WorkItem } from "@/content/company";
 import { Close } from "@/components/ui/Icons";
-import { Flip, useGSAP, prefersReducedMotion } from "@/lib/gsap";
+import { Flip, gsap, useGSAP, prefersReducedMotion } from "@/lib/gsap";
 
 const cats = ["All", "Bathrooms", "Kitchens", "Water heaters", "Repipes & leaks", "Emergency"] as const;
 
@@ -30,8 +30,8 @@ export function WorkGallery() {
         ease: "expo.out",
         scale: true,
         absolute: true,
-        onEnter: (els) => Flip.fromTo(els, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.7 }),
-        onLeave: (els) => Flip.to(els, { opacity: 0, scale: 0.85, duration: 0.4 }),
+        onEnter: (els) => gsap.fromTo(els, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.7 }),
+        onLeave: (els) => gsap.to(els, { opacity: 0, scale: 0.85, duration: 0.4 }),
       });
       flipState.current = null;
     },
