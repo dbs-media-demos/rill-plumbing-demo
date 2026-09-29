@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Figtree, Fraunces } from "next/font/google";
+import { Figtree, Fraunces } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -12,11 +13,14 @@ import { businessSchema, graph, websiteSchema } from "@/lib/schema";
 import { noindex, site, siteUrl } from "@/lib/site";
 import { ogImageUrl } from "@/lib/seo";
 
-const display = Bricolage_Grotesque({
-  subsets: ["latin"],
+// Static Bricolage Grotesque 600 (opsz 96), subset to Latin: ~18 KB instead of the ~77 KB variable file.
+const display = localFont({
+  src: "./fonts/bricolage-600.woff2",
+  weight: "600",
+  style: "normal",
   variable: "--font-bricolage",
-  axes: ["opsz"],
   display: "swap",
+  fallback: ["Arial", "sans-serif"],
 });
 const sans = Figtree({ subsets: ["latin"], variable: "--font-figtree", display: "swap" });
 const serif = Fraunces({
@@ -25,6 +29,8 @@ const serif = Fraunces({
   axes: ["SOFT", "WONK"],
   variable: "--font-fraunces",
   display: "swap",
+  // Accent words only: never the LCP, so don't compete with the critical path.
+  preload: false,
 });
 
 export const metadata: Metadata = {

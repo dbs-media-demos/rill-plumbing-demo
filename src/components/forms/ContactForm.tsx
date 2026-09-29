@@ -49,7 +49,7 @@ export function ContactForm() {
         </span>
         <h2 className="mt-6 font-display text-3xl font-semibold tracking-tight">Message received.</h2>
         <p className="mt-3 max-w-md text-white/80">We reply within one business hour, Mon–Sat. For anything wet, call instead: we answer 24/7.</p>
-        <p className="mt-6 text-sm text-white/55">Concept site by DBS Media: nothing was actually sent.</p>
+        <p className="mt-6 text-sm text-white/65">Concept site by DBS Media: nothing was actually sent.</p>
       </div>
     );
   }

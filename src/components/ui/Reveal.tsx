@@ -2,7 +2,16 @@
 
 import { useRef, type CSSProperties, type ElementType, type ReactNode } from "react";
 import clsx from "clsx";
-import { gsap, ScrollTrigger, SplitText, useGSAP, prefersReducedMotion } from "@/lib/gsap";
+import type { SplitText } from "gsap/SplitText";
+import { gsap, ScrollTrigger, useGSAP, prefersReducedMotion } from "@/lib/gsap";
+
+// SplitText is only fetched when the first split headline scrolls near the viewport.
+let splitTextPromise: Promise<typeof SplitText> | null = null;
+const loadSplitText = () =>
+  (splitTextPromise ??= import("gsap/SplitText").then((m) => {
+    gsap.registerPlugin(m.SplitText);
+    return m.SplitText;
+  }));
 
 /*
  * Scroll-driven reveals. Content is always visible in the HTML; `immediate`
@@ -34,11 +43,14 @@ export function SplitReveal({ children, as: Tag = "h2", className, delay = 0, im
       if (!el || immediate || prefersReducedMotion() || !belowFold(el)) return;
       gsap.set(el, { opacity: 0 });
       let split: SplitText | null = null;
+      let dead = false;
       const io = new IntersectionObserver(
-        ([entry]) => {
+        async ([entry]) => {
           if (!entry.isIntersecting) return;
           io.disconnect();
-          split = SplitText.create(el, {
+          const Split = await loadSplitText();
+          if (dead) return;
+          split = Split.create(el, {
             type: "lines",
             mask: "lines",
             autoSplit: true,
@@ -51,7 +63,11 @@ export function SplitReveal({ children, as: Tag = "h2", className, delay = 0, im
         { rootMargin: "0px 0px -8% 0px" },
       );
       io.observe(el);
+      // Warm the chunk shortly after load so the first reveal isn't delayed.
+      const warm = window.setTimeout(loadSplitText, 2500);
       return () => {
+        dead = true;
+        window.clearTimeout(warm);
         io.disconnect();
         split?.revert();
       };
@@ -106,7 +122,7 @@ export function Reveal({ children, as: Tag = "div", className, delay = 0, y = 40
 }
 
 /** Paragraph whose words brighten one by one as you scroll through it. */
-export function ScrubWords({ text, className, as: Tag = "p", start = 0.45 }: { text: string; className?: string; as?: ElementType; start?: number }) {
+export function ScrubWords({ text, className, as: Tag = "p", start = 0.62 }: { text: string; className?: string; as?: ElementType; start?: number }) {
   const ref = useRef<HTMLElement>(null);
 
   useGSAP(
@@ -116,7 +132,8 @@ export function ScrubWords({ text, className, as: Tag = "p", start = 0.45 }: { t
       const words = el.querySelectorAll<HTMLElement>("[data-w]");
       gsap.fromTo(
         words,
-        { opacity: start },
+        // Never below ~0.6 so resting words keep 3:1+ contrast (large text).
+        { opacity: Math.max(start, 0.62) },
         { opacity: 1, ease: "none", stagger: 0.1, scrollTrigger: { trigger: el, start: "top 80%", end: "bottom 50%", scrub: 0.6 } },
       );
     },

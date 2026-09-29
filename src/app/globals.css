@@ -170,7 +170,7 @@ html.lenis body {
 }
 @keyframes rise-in {
   from {
-    transform: translateY(105%);
+    transform: translateY(55%);
   }
   to {
     transform: translateY(0);

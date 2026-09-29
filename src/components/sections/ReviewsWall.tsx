@@ -12,7 +12,7 @@ export function ReviewCard({ r, className }: { r: Review; className?: string }) 
     <figure className={clsx("flex h-full flex-col justify-between rounded-[1.6rem] bg-white p-6 ring-1 ring-abyss/8", className)}>
       <div>
         <div className="flex items-center justify-between">
-          <span className="flex text-sunny" aria-label={`${r.rating} out of 5 stars`}>
+          <span role="img" className="flex text-sunny" aria-label={`${r.rating} out of 5 stars`}>
             {Array.from({ length: 5 }).map((_, i) => (
               <Star key={i} size={17} className={i < r.rating ? "" : "text-abyss/15"} />
             ))}

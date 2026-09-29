@@ -6,7 +6,10 @@ import { cities, zipToCity, type City } from "@/content/cities";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight } from "@/components/ui/Icons";
 import { SplitReveal } from "@/components/ui/Reveal";
+import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import { gsap, useGSAP, prefersReducedMotion } from "@/lib/gsap";
+
+if (typeof window !== "undefined") gsap.registerPlugin(MotionPathPlugin);
 
 /* Stylised North Dallas map (viewBox 0 0 1000 1000). Not to scale. */
 const roads = [
@@ -221,7 +224,7 @@ export function EtaMap() {
               onChange={(e) => setZip(e.target.value)}
               aria-invalid={!!zipError}
               aria-describedby={zipError ? "eta-zip-error" : undefined}
-              className="min-h-12 w-full rounded-full bg-white/8 px-5 text-white ring-1 ring-white/15 placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-spray"
+              className="min-h-12 w-full rounded-full bg-white/8 px-5 text-white ring-1 ring-white/15 placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-spray"
             />
             <button type="submit" aria-label="Check arrival time" className="grid size-12 shrink-0 place-items-center rounded-full bg-bonnet text-white hover:bg-bonnet-deep">
               <ArrowRight size={20} />
@@ -259,7 +262,7 @@ export function EtaMap() {
               </p>
             )}
           </div>
-          <p className="mt-4 text-xs text-white/50">Illustrative: vans and arrival times are simulated for this concept site.</p>
+          <p className="mt-4 text-xs text-white/65">Illustrative: vans and arrival times are simulated for this concept site.</p>
         </div>
 
         <div className="order-1 lg:order-2">

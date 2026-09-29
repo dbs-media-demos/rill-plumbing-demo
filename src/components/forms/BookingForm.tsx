@@ -160,7 +160,7 @@ export function BookingForm() {
             Find your shut-off
           </Button>
         </div>
-        <p className="mt-8 text-sm text-white/55">Concept site by DBS Media: this form validates but doesn&apos;t send anything.</p>
+        <p className="mt-8 text-sm text-white/65">Concept site by DBS Media: this form validates but doesn&apos;t send anything.</p>
       </div>
     );
   }
@@ -447,7 +447,7 @@ export function BookingForm() {
             {site.phoneDisplay}
           </a>
         </p>
-        <p className="mt-2 text-xs text-white/45">Serving {cities.map((c) => c.name).join(", ")}.</p>
+        <p className="mt-2 text-xs text-white/65">Serving {cities.map((c) => c.name).join(", ")}.</p>
       </aside>
     </div>
   );

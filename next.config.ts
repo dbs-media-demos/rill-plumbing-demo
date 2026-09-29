@@ -12,6 +12,10 @@ const noindex = process.env.NEXT_PUBLIC_NOINDEX !== "false";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    // Tailwind CSS is small; inlining removes the render-blocking stylesheet request (better FCP/LCP on first visit).
+    inlineCss: true,
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     qualities: [60, 70, 75, 85],

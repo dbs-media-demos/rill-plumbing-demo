@@ -62,7 +62,7 @@ export function PageHero({ eyebrow, title, intro, image, imageAlt, crumbs, child
       )}
     >
       <JsonLd data={graph(breadcrumbSchema(all))} />
-      <Image src={image} alt={imageAlt} fill preload sizes="100vw" quality={65} className="hero-zoom -z-20 object-cover" />
+      <Image src={image} alt={imageAlt} fill fetchPriority="high" loading="eager" sizes="100vw" quality={65} className="hero-zoom -z-20 object-cover" />
       <div
         aria-hidden
         className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(6,34,47,0.6)_0%,rgba(6,34,47,0.25)_35%,rgba(6,34,47,0.92)_100%)]"

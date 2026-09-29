@@ -14,7 +14,8 @@ export function HomeHero() {
         src="/images/hero-water.jpg"
         alt=""
         fill
-        preload
+        fetchPriority="high"
+        loading="eager"
         sizes="100vw"
         quality={60}
         className="-z-20 object-cover"

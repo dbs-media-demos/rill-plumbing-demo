@@ -5,7 +5,10 @@ import { useRef, useState } from "react";
 import clsx from "clsx";
 import { work, type WorkItem } from "@/content/company";
 import { Close } from "@/components/ui/Icons";
-import { Flip, gsap, useGSAP, prefersReducedMotion } from "@/lib/gsap";
+import { Flip } from "gsap/Flip";
+import { gsap, useGSAP, prefersReducedMotion } from "@/lib/gsap";
+
+if (typeof window !== "undefined") gsap.registerPlugin(Flip);
 
 const cats = ["All", "Bathrooms", "Kitchens", "Water heaters", "Repipes & leaks", "Emergency"] as const;
 

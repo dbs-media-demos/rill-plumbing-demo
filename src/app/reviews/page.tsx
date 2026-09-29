@@ -55,7 +55,7 @@ export default function ReviewsPage() {
                 <Google /> Google rating
               </h2>
               <p className="mt-2 font-display text-8xl font-semibold leading-none tracking-tighter">{site.rating}</p>
-              <span className="mt-2 flex text-sunny" aria-label={`${site.rating} out of 5`}>
+              <span role="img" className="mt-2 flex text-sunny" aria-label={`${site.rating} out of 5`}>
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star key={i} size={22} />
                 ))}
