@@ -4,7 +4,7 @@
 - Market / city: US – North Dallas / Plano, TX (Plano, Frisco, Allen, Richardson, Carrollton, North Dallas)
 - Languages: en
 - Live URL: https://rill-plumbing-demo.vercel.app
-- Repo: local only for now (git history in this folder; GitHub remote pending the demos org)
+- Repo: https://github.com/dbs-media-demos/rill-plumbing-demo
 - Folder: DBS Media Portfolio/Demo Websites/plumbing
 - Stack: Next.js 16.3.6, React 19.2.8, Tailwind v4, GSAP 3 (ScrollTrigger, SplitText, Flip, MotionPath), Lenis, WebGL
 - Palette: #06222F abyss · #0A6B85 river · #CDEFF5 spray · #F6F8F7 porcelain · #5A48E0 bluebonnet (CTA) · #FFCB47 sunny
