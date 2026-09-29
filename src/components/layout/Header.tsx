@@ -158,9 +158,11 @@ export function Header() {
                 <Phone size={18} />
                 {site.phoneDisplay}
               </a>
-              <Button href="/book" size="md" className="hidden sm:inline-flex">
-                Book a plumber
-              </Button>
+              <span className="hidden sm:block">
+                <Button href="/book" size="md">
+                  Book a plumber
+                </Button>
+              </span>
               <button
                 type="button"
                 onClick={() => setOpen(true)}

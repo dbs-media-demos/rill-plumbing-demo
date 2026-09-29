@@ -64,7 +64,7 @@ function PriceRow({ item, open, onToggle }: { item: PriceItem; open: boolean; on
           aria-expanded={open}
           aria-controls={id}
           onClick={onToggle}
-          className="group grid w-full grid-cols-[1fr_auto_auto] items-center gap-4 py-5 text-left sm:gap-8 sm:py-6"
+          className="group grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 py-5 text-left sm:gap-8 sm:py-6"
         >
           <span>
             <span className="flex flex-wrap items-center gap-2">
