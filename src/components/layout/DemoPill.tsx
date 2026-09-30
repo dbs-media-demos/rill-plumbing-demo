@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Close } from "@/components/ui/Icons";
-import { site } from "@/lib/site";
+import { agencyName, agencyUrl } from "@/lib/site";
 
 const KEY = "rill-demo-pill";
 
@@ -24,8 +24,8 @@ export function DemoPill() {
 
   return (
     <div className="anim-fade fixed bottom-[5.6rem] left-3 z-40 flex items-center rounded-full bg-white/90 py-1 pl-3.5 pr-1 text-[0.8rem] text-abyss shadow-[0_10px_30px_-10px_rgba(6,34,47,0.4)] ring-1 ring-abyss/10 backdrop-blur-md md:bottom-5 md:left-5">
-      <a href={site.dbsUrl} target="_blank" rel="noopener" className="font-medium hover:underline">
-        Concept site by <strong>DBS Media</strong> ↗
+      <a href={agencyUrl} target="_blank" rel="noopener" className="font-medium hover:underline">
+        <span className="hidden sm:inline">Concept site by </span><span className="sm:hidden">Concept by </span><strong>{agencyName}</strong> ↗
       </a>
       <button
         type="button"

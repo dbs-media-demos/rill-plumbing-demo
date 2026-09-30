@@ -160,7 +160,7 @@ export function BookingForm() {
             Find your shut-off
           </Button>
         </div>
-        <p className="mt-8 text-sm text-white/65">Concept site by DBS Media: this form validates but doesn&apos;t send anything.</p>
+        <p className="mt-8 text-sm text-white/65">Concept site by Scale by Noon: this form validates but doesn&apos;t send anything.</p>
       </div>
     );
   }

@@ -36,7 +36,7 @@ export default function PrivacyPage() {
           <p className="mt-4 text-slate">Last updated September 28, 2026</p>
           <div className="prose-rill mt-12 max-w-3xl">
             <p>
-              <strong>This is a concept website created by DBS Media.</strong> {site.name} is a fictional company, and the booking and contact
+              <strong>This is a concept website created by Scale by Noon.</strong> {site.name} is a fictional company, and the booking and contact
               forms on this site do not send or store any information. The policy below shows what a real plumbing company&apos;s policy would
               cover.
             </p>

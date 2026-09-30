@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Wordmark } from "@/components/brand/Logo";
 import { services } from "@/content/services";
 import { cities } from "@/content/cities";
-import { site, telHref, mailHref } from "@/lib/site";
+import { site, telHref, mailHref, agencyName, agencyUrl } from "@/lib/site";
 import { Google, Star } from "@/components/ui/Icons";
 import { OpenBadge } from "./OpenBadge";
 
@@ -78,8 +78,8 @@ export function Footer() {
             </p>
             <p>
               Design &amp; development:{" "}
-              <a href={site.dbsUrl} className="font-semibold text-white underline-offset-4 hover:underline">
-                DBS Media
+              <a href={agencyUrl} className="font-semibold text-white underline-offset-4 hover:underline">
+                {agencyName}
               </a>
             </p>
           </div>

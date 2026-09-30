@@ -1,4 +1,8 @@
-/** Business facts for the fictional Rill Plumbing Co. (a DBS Media concept site). */
+/** Business facts for the fictional Rill Plumbing Co. (a Scale by Noon concept site). */
+
+/** The agency that built this concept site. Change the URL here only (custom domain coming later). */
+export const agencyName = "Scale by Noon";
+export const agencyUrl = "https://scale-by-noon.vercel.app";
 
 export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://rill-plumbing-demo.vercel.app").replace(/\/$/, "");
 
@@ -35,7 +39,7 @@ export const site = {
     office: "Mon–Sat, 7 am – 7 pm",
   },
   warranty: "1-year labor warranty",
-  dbsUrl: "https://dbs-media.com",
+  agencyUrl,
 } as const;
 
 export const telHref = `tel:${site.phone}`;
