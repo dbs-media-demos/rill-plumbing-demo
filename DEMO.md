@@ -1,6 +1,6 @@
 # Rill Plumbing Co. (Scale by Noon demo)
 
-- Niche: Plumbing         (matches scale-by-noon.vercel.app industry id: plumbing)
+- Niche: Plumbing         (matches www.scalebynoon.com industry id: plumbing)
 - Market / city: US – North Dallas / Plano, TX (Plano, Frisco, Allen, Richardson, Carrollton, North Dallas)
 - Languages: en
 - Live URL: https://rill-plumbing-demo.vercel.app
