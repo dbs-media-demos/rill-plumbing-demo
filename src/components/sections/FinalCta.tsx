@@ -3,13 +3,15 @@ import { Button } from "@/components/ui/Button";
 import { ArrowRight, Phone } from "@/components/ui/Icons";
 import { SplitReveal, Reveal } from "@/components/ui/Reveal";
 import { OpenBadge } from "@/components/layout/OpenBadge";
-import { site, telHref } from "@/lib/site";
+import { defaultBiz } from "@/lib/biz";
+import { telOf, type Biz } from "@/lib/biz-core";
 
 type Props = {
   title?: React.ReactNode;
   body?: string;
   image?: string;
   imageAlt?: string;
+  biz?: Biz;
 };
 
 /** Full-bleed closing call to action with rings rippling out from the buttons. */
@@ -22,6 +24,7 @@ export function FinalCta({
   body = "Call any hour and a real person answers. Flat price before we start, shoe covers on, and the same rate at 2 am as 2 pm.",
   image = "/images/house-brick.jpg",
   imageAlt = "Brick family home in a quiet North Texas neighborhood",
+  biz = defaultBiz,
 }: Props) {
   return (
     <section data-pipe data-header="dark" aria-labelledby="cta-heading" className="on-dark relative isolate overflow-hidden bg-abyss text-white">
@@ -48,9 +51,11 @@ export function FinalCta({
               <Button href="/book" size="lg" icon={<ArrowRight size={18} />}>
                 Book a plumber
               </Button>
-              <Button href={telHref} size="lg" variant="light" icon={<Phone size={18} />}>
-                {site.phoneDisplay}
-              </Button>
+              {biz.phone && (
+                <Button href={telOf(biz)!} size="lg" variant="light" icon={<Phone size={18} />}>
+                  {biz.phoneDisplay}
+                </Button>
+              )}
             </div>
           </Reveal>
         </div>

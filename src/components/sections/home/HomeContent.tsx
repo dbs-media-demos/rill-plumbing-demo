@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { PageShell } from "@/components/layout/PageShell";
 import { HomeHero } from "@/components/sections/home/HomeHero";
 import { DropletZoom } from "@/components/sections/home/DropletZoom";
@@ -17,35 +17,42 @@ import { Accordion } from "@/components/ui/Accordion";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight } from "@/components/ui/Icons";
 import { Counter, Reveal, SplitReveal } from "@/components/ui/Reveal";
-import { JsonLd } from "@/components/ui/JsonLd";
 import { homeFaqs } from "@/content/faqs";
 import { stats } from "@/content/company";
-import { buildMetadata, ogImageUrl } from "@/lib/seo";
-import { faqSchema, graph, webPageSchema } from "@/lib/schema";
-import { site } from "@/lib/site";
+import { defaultBiz } from "@/lib/biz";
+import { L, openDays, type Biz } from "@/lib/biz-core";
+import { PreviewMap } from "@/components/preview/PreviewMap";
 
-const description = site.description;
+type Stat = { value: number; suffix?: string; label: string; decimals?: number };
 
-export const metadata: Metadata = buildMetadata({
-  title: `${site.name} | 24/7 Plumbers in Plano, Frisco & North Dallas`,
-  absoluteTitle: true,
-  description,
-  path: "/",
-  eyebrow: "24/7 plumbers · Plano & North Dallas",
-  image: ogImageUrl("Water where it belongs.", "24/7 plumbers · Plano & North Dallas"),
-});
+/** A preview states only what's true of the real business: its rating and opening days. */
+function previewStats(biz: Biz): Stat[] {
+  const days = openDays(biz);
+  return [
+    ...(biz.rating ? [{ value: biz.rating.value, suffix: "★", decimals: 1, label: L(biz, "average Google rating", "prosečna ocena na Google-u") }] : []),
+    ...(biz.rating ? [{ value: biz.rating.count, suffix: "", label: L(biz, "Google reviews", "Google recenzija") }] : []),
+    ...(days ? [{ value: days, suffix: "", label: L(biz, "days a week the office is open", "dana nedeljno radimo") }] : []),
+    { value: 24, suffix: "/7", label: L(biz, "plumbers on call for emergencies", "dežurni vodoinstalateri za hitne slučajeve") },
+  ];
+}
 
-export default function HomePage() {
+/**
+ * The homepage sections. The concept site renders them as they are; a personalised preview
+ * (/for/<token>) passes a real business: its name, phone, hours, rating and a map of its address
+ * replace Rill's, and the North Dallas arrival map and area panels step aside.
+ */
+export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; children?: ReactNode }) {
+  const statList = biz.preview ? previewStats(biz) : stats;
   return (
     <PageShell>
-      <JsonLd data={graph(webPageSchema({ path: "/", name: site.name, description }), faqSchema(homeFaqs))} />
-      <HomeHero />
+      {children}
+      <HomeHero biz={biz} />
       <DropletZoom />
 
       <Pipeline>
         <ProblemPicker />
         <ServicesList />
-        <EtaMap />
+        {biz.preview ? <PreviewMap biz={biz} /> : <EtaMap />}
 
         <section data-pipe aria-labelledby="prices-heading" className="section-y relative bg-white">
           <div className="container-x grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
@@ -100,12 +107,12 @@ export default function HomePage() {
       <WorkRail />
 
       <Pipeline>
-        <ReviewsWall />
+        <ReviewsWall biz={biz} />
 
-        <section data-pipe aria-label="Rill Plumbing by the numbers" className="relative bg-abyss py-16 text-white lg:py-20" data-header="dark">
+        <section data-pipe aria-label={biz.preview ? biz.name : "Rill Plumbing by the numbers"} className="relative bg-abyss py-16 text-white lg:py-20" data-header="dark">
           <div className="container-x">
             <dl className="grid grid-cols-2 gap-y-10 lg:grid-cols-4">
-              {stats.map((s) => (
+              {statList.map((s) => (
                 <div key={s.label} className="border-l border-white/15 pl-5">
                   <dt className="sr-only">{s.label}</dt>
                   <dd>
@@ -123,7 +130,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <AreaPanels />
+        {!biz.preview && <AreaPanels />}
 
         <section data-pipe aria-labelledby="faq-heading" className="section-y relative bg-white">
           <div className="container-x grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
@@ -143,7 +150,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <FinalCta />
+        <FinalCta biz={biz} />
       </Pipeline>
     </PageShell>
   );

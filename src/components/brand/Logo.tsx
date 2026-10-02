@@ -1,4 +1,7 @@
+"use client";
+
 import clsx from "clsx";
+import { useBiz } from "@/components/preview/BizContext";
 
 /**
  * "rill" wordmark: the two l's are a single pipe that bends into a P-trap,
@@ -33,6 +36,21 @@ export function Mark({ className }: { className?: string }) {
 
 /** Full lockup: wordmark + small "plumbing co." label. */
 export function Logo({ className, tone = "dark" }: { className?: string; tone?: "dark" | "light" }) {
+  const biz = useBiz();
+  if (biz.preview) {
+    // A real business: its name in the display face, with the droplet mark
+    return (
+      <span className={clsx("inline-flex items-center gap-2.5", tone === "light" ? "text-white" : "text-abyss", className)}>
+        <Mark className="size-9 shrink-0" />
+        <span className="flex min-w-0 flex-col leading-none">
+          <span className={clsx("block max-w-[13rem] truncate font-display font-semibold tracking-tight sm:max-w-[18rem]", biz.shortName.length > 16 ? "text-[1.05rem]" : "text-[1.35rem]")}>
+            {biz.shortName}
+          </span>
+          <span className="mt-1 font-display text-[0.6rem] font-semibold uppercase tracking-[0.18em] opacity-80">{biz.lang === "sr" ? "Vodoinstalater" : "Plumbing"}</span>
+        </span>
+      </span>
+    );
+  }
   return (
     <span className={clsx("inline-flex items-end gap-2", tone === "light" ? "text-white" : "text-abyss", className)}>
       <Wordmark className="w-[3.1rem]" drop={tone === "light" ? "var(--color-sunny)" : "var(--color-bonnet)"} />

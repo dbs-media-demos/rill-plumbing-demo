@@ -2,21 +2,23 @@
 
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import { officeStatus } from "@/lib/hours";
+import { openStatus } from "@/lib/biz-core";
+import { useBiz } from "@/components/preview/BizContext";
 
 /**
- * Live status badge. Plumbers are on call 24/7; the office line has hours.
- * Rendered generically on the server, then refined on the client (Dallas time).
+ * Live status badge. Plumbers are on call 24/7; the office line has hours (the business's own on
+ * a preview). Rendered generically on the server, then refined on the client.
  */
 export function OpenBadge({ className, tone = "light", compact }: { className?: string; tone?: "light" | "dark"; compact?: boolean }) {
+  const biz = useBiz();
   const [label, setLabel] = useState<string | null>(null);
 
   useEffect(() => {
-    const update = () => setLabel(officeStatus().label);
+    const update = () => setLabel(openStatus(biz)?.text ?? null);
     update();
     const id = window.setInterval(update, 60_000);
     return () => window.clearInterval(id);
-  }, []);
+  }, [biz]);
 
   return (
     <span

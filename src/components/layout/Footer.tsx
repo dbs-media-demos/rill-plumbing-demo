@@ -2,7 +2,9 @@ import Link from "next/link";
 import { Wordmark } from "@/components/brand/Logo";
 import { services } from "@/content/services";
 import { cities } from "@/content/cities";
-import { site, telHref, mailHref, agencyName, agencyUrl } from "@/lib/site";
+import { site, mailHref, agencyName, agencyUrl } from "@/lib/site";
+import { defaultBiz } from "@/lib/biz";
+import { num, telOf, type Biz } from "@/lib/biz-core";
 import { Google, Star } from "@/components/ui/Icons";
 import { OpenBadge } from "./OpenBadge";
 
@@ -17,7 +19,7 @@ const company = [
   { label: "Contact", href: "/contact" },
 ];
 
-export function Footer() {
+export function Footer({ biz = defaultBiz }: { biz?: Biz }) {
   return (
     <footer data-header="dark" className="on-dark relative overflow-hidden bg-abyss pb-24 text-white md:pb-0">
       <div className="container-x pt-20 lg:pt-28">
@@ -27,15 +29,18 @@ export function Footer() {
               Water where it <span className="accent text-spray">belongs.</span>
             </p>
             <div className="mt-8 space-y-3 text-white/80">
-              <a href={telHref} className="block font-display text-3xl font-semibold tracking-tight text-white hover:text-spray">
-                {site.phoneDisplay}
+              <a href={telOf(biz)} className="block font-display text-3xl font-semibold tracking-tight text-white hover:text-spray">
+                {biz.phoneDisplay}
               </a>
-              <a href={mailHref} className="block hover:text-white">
-                {site.email}
-              </a>
-              <p>{site.address.display}</p>
+              {!biz.preview && (
+                <a href={mailHref} className="block hover:text-white">
+                  {site.email}
+                </a>
+              )}
+              <p>{biz.address.full}</p>
               <OpenBadge tone="dark" />
             </div>
+            {biz.rating && (
             <div className="mt-8 inline-flex items-center gap-3 rounded-2xl bg-white/5 px-4 py-3 ring-1 ring-white/10">
               <Google />
               <span className="flex text-sunny" aria-hidden>
@@ -44,19 +49,21 @@ export function Footer() {
                 ))}
               </span>
               <span className="text-sm">
-                <strong>{site.rating}</strong> · {site.reviewCount} Google reviews
+                <strong>{num(biz, biz.rating.value)}</strong> · {biz.rating.count} {biz.lang === "sr" ? "Google recenzija" : "Google reviews"}
               </span>
             </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
             <FooterCol title="Services" links={services.map((s) => ({ label: s.name, href: `/services/${s.slug}` }))} />
             <FooterCol
               title="Service areas"
-              links={[
-                ...cities.map((c) => ({ label: `${c.name}, TX`, href: `/service-areas/${c.slug}` })),
-                { label: "All areas", href: "/service-areas" },
-              ]}
+              links={
+                biz.preview
+                  ? [{ label: biz.area, href: "/service-areas" }]
+                  : [...cities.map((c) => ({ label: `${c.name}, TX`, href: `/service-areas/${c.slug}` })), { label: "All areas", href: "/service-areas" }]
+              }
             />
             <FooterCol title="Company" links={company} />
           </div>
@@ -64,14 +71,22 @@ export function Footer() {
 
         <div className="mt-16 grid gap-6 border-t border-white/10 pt-8 text-sm text-white/60 md:grid-cols-2">
           <div className="space-y-1.5">
-            <p>
-              Licensed &amp; insured · Texas State Board of Plumbing Examiners · {site.license}
-            </p>
-            <p>{site.hours.emergency} emergency service · Office {site.hours.office}</p>
+            {biz.preview ? (
+              <p>{biz.lang === "sr" ? "Hitne intervencije 24/7" : "24/7 emergency service"}{biz.hoursSummary ? ` · ${biz.lang === "sr" ? "Radno vreme" : "Office"} ${biz.hoursSummary}` : ""}</p>
+            ) : (
+              <>
+                <p>
+                  Licensed &amp; insured · Texas State Board of Plumbing Examiners · {site.license}
+                </p>
+                <p>{site.hours.emergency} emergency service · Office {site.hours.office}</p>
+              </>
+            )}
           </div>
           <div className="space-y-1.5 md:text-right">
             <p>
-              © {new Date().getFullYear()} {site.legalName}. A fictional company.{" "}
+              {biz.preview
+                ? `© ${new Date().getFullYear()} ${biz.name}. ${biz.lang === "sr" ? `Pregled početne strane napravljen za ${biz.name}.` : `A preview homepage made for ${biz.name}.`}`
+                : `© ${new Date().getFullYear()} ${site.legalName}. A fictional company.`}{" "}
               <Link href="/privacy" className="underline underline-offset-4 hover:text-white">
                 Privacy
               </Link>

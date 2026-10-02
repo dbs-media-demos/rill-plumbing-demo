@@ -9,7 +9,8 @@ import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight, ArrowUpRight, Close, Menu, Phone } from "@/components/ui/Icons";
 import { services } from "@/content/services";
-import { site, telHref } from "@/lib/site";
+import { useBiz } from "@/components/preview/BizContext";
+import { telOf } from "@/lib/biz-core";
 import { OpenBadge } from "./OpenBadge";
 
 const nav = [
@@ -28,6 +29,8 @@ const mobileExtra = [
 ];
 
 export function Header() {
+  const biz = useBiz();
+  const telHref = telOf(biz) ?? "";
   const pathname = usePathname();
   const ref = useRef<HTMLElement>(null);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -117,7 +120,7 @@ export function Header() {
                 : "bg-transparent",
             )}
           >
-            <Link href="/" aria-label={`${site.name}, home`} className="shrink-0 rounded-lg">
+            <Link href="/" aria-label={`${biz.name}, ${biz.lang === "sr" ? "početna" : "home"}`} className="shrink-0 rounded-lg">
               <Logo tone={dark ? "light" : "dark"} />
             </Link>
 
@@ -156,7 +159,7 @@ export function Header() {
                 )}
               >
                 <Phone size={18} />
-                {site.phoneDisplay}
+                {biz.phoneDisplay}
               </a>
               <span className="hidden sm:block">
                 <Button href="/book" size="md">

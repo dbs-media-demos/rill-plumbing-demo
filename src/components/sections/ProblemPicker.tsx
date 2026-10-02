@@ -9,10 +9,12 @@ import { Button } from "@/components/ui/Button";
 import { ArrowRight, Phone } from "@/components/ui/Icons";
 import { SplitReveal, Reveal } from "@/components/ui/Reveal";
 import { gsap, useGSAP, prefersReducedMotion } from "@/lib/gsap";
-import { telHref } from "@/lib/site";
+import { useBiz } from "@/components/preview/BizContext";
+import { telOf } from "@/lib/biz-core";
 import { ProblemIcon } from "./ProblemIcons";
 
 export function ProblemPicker({ initial = "burst", compact }: { initial?: string; compact?: boolean }) {
+  const telHref = telOf(useBiz()) ?? "";
   const [active, setActive] = useState(initial);
   const panel = useRef<HTMLDivElement>(null);
   const tiles = useRef<(HTMLButtonElement | null)[]>([]);

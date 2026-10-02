@@ -4,11 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
 import { work } from "@/content/company";
+import { useBiz } from "@/components/preview/BizContext";
 import { ArrowRight } from "@/components/ui/Icons";
 import { gsap, useGSAP, prefersReducedMotion, isTouch } from "@/lib/gsap";
 
 /** Recent jobs. Desktop: pinned horizontal scroll. Touch: native swipe with snap. */
 export function WorkRail() {
+  const biz = useBiz();
   const root = useRef<HTMLElement>(null);
   const track = useRef<HTMLDivElement>(null);
 
@@ -91,7 +93,7 @@ export function WorkRail() {
             <div className="mt-4 flex items-start justify-between gap-4">
               <div>
                 <h3 className="font-display text-xl font-semibold tracking-tight">{w.title}</h3>
-                <p className="text-sm text-slate">{w.place}</p>
+                <p className="text-sm text-slate">{biz.preview ? biz.area : w.place}</p>
               </div>
               <p className="max-w-[12rem] text-right text-sm text-slate">{w.note}</p>
             </div>

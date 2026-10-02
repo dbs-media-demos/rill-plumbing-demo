@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useId, useState } from "react";
 import clsx from "clsx";
-import { priceGroups, usd, type PriceItem } from "@/content/pricing";
+import { priceGroups, usd as usdFmt, type PriceItem } from "@/content/pricing";
+import { useBiz } from "@/components/preview/BizContext";
+
+/** Serbian previews price in dinars, at Serbian plumbing levels (~30 din per US dollar of the job), rounded to 500. */
+const rsd = (n: number) => `${(Math.round((n * 30) / 500) * 500).toLocaleString("sr-RS")} din`;
 import { Check, Clock, Plus } from "@/components/ui/Icons";
 
 /** Upfront price menu: category chips + smoothly expanding rows. */
@@ -55,6 +59,7 @@ export function PriceMenu({ groups = priceGroups.map((g) => g.id), initialOpen }
 }
 
 function PriceRow({ item, open, onToggle }: { item: PriceItem; open: boolean; onToggle: () => void }) {
+  const usd = useBiz().lang === "sr" ? rsd : usdFmt;
   const id = useId();
   return (
     <li className="border-b border-abyss/12">

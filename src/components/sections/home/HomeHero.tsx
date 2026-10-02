@@ -3,11 +3,13 @@ import type { CSSProperties } from "react";
 import { WaterSurface } from "@/components/fx/WaterSurface";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight, Google, Phone, Shield, Star } from "@/components/ui/Icons";
-import { site, telHref } from "@/lib/site";
+import { defaultBiz } from "@/lib/biz";
+import { num, telOf, type Biz } from "@/lib/biz-core";
 
 const d = (s: number) => ({ "--d": `${s}s` }) as CSSProperties;
 
-export function HomeHero() {
+export function HomeHero({ biz = defaultBiz }: { biz?: Biz }) {
+  const sr = biz.lang === "sr";
   return (
     <section data-header="dark" className="on-dark relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-abyss text-white">
       <Image
@@ -40,17 +42,19 @@ export function HomeHero() {
           <div>
             <p className="anim-fade flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.95rem] font-medium text-white/85" style={d(0.05)}>
               <span className="pulse-dot" aria-hidden />
-              Plumbers on call 24/7 · Plano &amp; North Dallas
+              {biz.preview ? `${sr ? "Vodoinstalateri dežurni 24/7" : "Plumbers on call 24/7"} · ${biz.area}` : "Plumbers on call 24/7 · Plano & North Dallas"}
             </p>
             <h1 className="t-display mt-5 font-display font-semibold">
               <span className="anim-line block overflow-hidden pb-[0.06em]">
-                <span style={d(0.1)}>Water where</span>
+                <span style={d(0.1)}>{biz.tagline ?? "Water where"}</span>
               </span>
-              <span className="anim-line block overflow-hidden pb-[0.12em]">
-                <span style={d(0.22)}>
-                  it <span className="accent font-normal text-spray">belongs.</span>
+              {!biz.tagline && (
+                <span className="anim-line block overflow-hidden pb-[0.12em]">
+                  <span style={d(0.22)}>
+                    it <span className="accent font-normal text-spray">belongs.</span>
+                  </span>
                 </span>
-              </span>
+              )}
             </h1>
             <p className="anim-fade mt-6 max-w-xl text-lg text-white/85 lg:text-xl" style={d(0.45)}>
               Leaks, clogs and dead water heaters, fixed today by licensed plumbers who quote upfront, wear shoe covers, and
@@ -60,9 +64,11 @@ export function HomeHero() {
               <Button href="/book" size="lg" icon={<ArrowRight size={18} />}>
                 Book a plumber
               </Button>
-              <Button href={telHref} size="lg" variant="outline-light" icon={<Phone size={18} />}>
-                {site.phoneDisplay}
-              </Button>
+              {biz.phone && (
+                <Button href={telOf(biz)!} size="lg" variant="outline-light" icon={<Phone size={18} />}>
+                  {biz.phoneDisplay}
+                </Button>
+              )}
             </div>
           </div>
 
@@ -70,7 +76,7 @@ export function HomeHero() {
             <div className="mask-drop relative aspect-[100/130] w-full">
               <Image
                 src="/images/plumber-under-sink.jpg"
-                alt="Rill plumber replacing a supply line under a kitchen sink"
+                alt={biz.preview ? "Plumber replacing a supply line under a kitchen sink" : "Rill plumber replacing a supply line under a kitchen sink"}
                 fill
                 sizes="320px"
                 quality={70}
@@ -82,8 +88,8 @@ export function HomeHero() {
                 <span className="pulse-dot" style={{ ["--dot" as string]: "#3ddc97" }} />
               </span>
               <span className="text-sm leading-tight">
-                <strong className="block">Marcus is nearby</strong>
-                <span className="text-slate">~38 min to Plano</span>
+                <strong className="block">{biz.preview ? (sr ? "Vodoinstalater je blizu" : "A plumber is nearby") : "Marcus is nearby"}</strong>
+                <span className="text-slate">{biz.preview ? (sr ? "Stiže brzo" : "On the way fast") : "~38 min to Plano"}</span>
               </span>
             </div>
           </div>
@@ -93,6 +99,7 @@ export function HomeHero() {
           className="anim-fade mt-12 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-white/15 pt-6 text-sm text-white/80"
           style={d(0.75)}
         >
+          {biz.rating && (
           <li className="flex items-center gap-2">
             <Google size={16} />
             <span className="flex text-sunny" aria-hidden>
@@ -100,8 +107,9 @@ export function HomeHero() {
                 <Star key={i} size={14} />
               ))}
             </span>
-            <strong className="text-white">{site.rating}</strong> from {site.reviewCount} reviews
+            <strong className="text-white">{num(biz, biz.rating.value)}</strong> {sr ? `· ${biz.rating.count} recenzija` : `from ${biz.rating.count} reviews`}
           </li>
+          )}
           <li className="flex items-center gap-2">
             <Shield size={18} /> Licensed &amp; insured
           </li>

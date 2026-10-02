@@ -1,15 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Figtree, Fraunces } from "next/font/google";
+import { Bricolage_Grotesque, Figtree, Fraunces } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
-import { MobileBar } from "@/components/layout/MobileBar";
-import { DemoPill } from "@/components/layout/DemoPill";
 import { Cursor } from "@/components/layout/Cursor";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
-import { JsonLd } from "@/components/ui/JsonLd";
-import { businessSchema, graph, websiteSchema } from "@/lib/schema";
 import { noindex, site, siteUrl } from "@/lib/site";
 import { ogImageUrl } from "@/lib/seo";
 
@@ -22,9 +16,12 @@ const display = localFont({
   display: "swap",
   fallback: ["Arial", "sans-serif"],
 });
-const sans = Figtree({ subsets: ["latin"], variable: "--font-figtree", display: "swap" });
+// č ć š ž đ for Serbian previews: the local subset above is Latin-only, so these come from Google's
+// latin-ext Bricolage (listed first in --font-display; only downloaded when such letters appear).
+const displayExt = Bricolage_Grotesque({ subsets: ["latin-ext"], weight: "600", variable: "--font-bricolage-ext", display: "swap", preload: false });
+const sans = Figtree({ subsets: ["latin", "latin-ext"], variable: "--font-figtree", display: "swap" });
 const serif = Fraunces({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   style: ["italic"],
   axes: ["SOFT", "WONK"],
   variable: "--font-fraunces",
@@ -62,15 +59,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-US" className={`${display.variable} ${sans.variable} ${serif.variable}`}>
+    <html lang="en-US" className={`${display.variable} ${displayExt.variable} ${sans.variable} ${serif.variable}`}>
       <body>
-        <JsonLd data={graph(businessSchema(), websiteSchema())} />
         <SmoothScroll />
-        <Header />
+        {/* Header, footer and the rest come from (site)/layout or for/[token]/layout (SiteChrome) */}
         {children}
-        <Footer />
-        <MobileBar />
-        <DemoPill />
         <Cursor />
       </body>
     </html>
