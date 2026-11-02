@@ -54,18 +54,18 @@ export function PromiseStack() {
             >
               <div
                 data-inner
-                className="relative grid origin-top overflow-hidden rounded-[2rem] bg-white shadow-[0_30px_60px_-40px_rgba(6,34,47,0.5)] ring-1 ring-abyss/6 md:grid-cols-2 lg:min-h-[60vh]"
+                className="relative grid origin-top overflow-hidden rounded-[2rem] bg-white shadow-[0_30px_60px_-40px_rgba(6,34,47,0.5)] ring-1 ring-abyss/6 md:grid-cols-2 lg:min-h-[22rem]"
               >
-                <div className="relative aspect-[4/3] md:aspect-auto md:min-h-full">
+                <div className="relative aspect-[2/1] md:aspect-auto md:min-h-full">
                   <Image src={p.image} alt={p.alt} fill sizes="(min-width: 768px) 50vw, 100vw" quality={70} className="object-cover" />
                 </div>
-                <div className="flex flex-col justify-between gap-10 p-7 sm:p-10 lg:p-14">
-                  <span className="font-display text-7xl font-semibold leading-none tracking-tighter text-spray lg:text-9xl">
+                <div className="flex flex-col justify-between gap-4 p-6 sm:p-8 lg:gap-6 lg:p-10">
+                  <span className="font-display text-5xl font-semibold leading-none tracking-tighter text-spray lg:text-7xl">
                     {p.kicker}
                   </span>
                   <div>
                     <h3 className="t-3 font-display font-semibold">{p.title}</h3>
-                    <p className="mt-4 max-w-md text-lg text-slate">{p.body}</p>
+                    <p className="mt-3 max-w-md text-base text-slate sm:text-lg">{p.body}</p>
                   </div>
                 </div>
                 <div data-shade aria-hidden className="pointer-events-none absolute inset-0 bg-abyss opacity-0" />
