@@ -7,6 +7,7 @@ import clsx from "clsx";
 import { cities } from "@/content/cities";
 import { ArrowUpRight } from "@/components/ui/Icons";
 import { SplitReveal } from "@/components/ui/Reveal";
+import { WaterTower } from "@/components/fx/WaterTower";
 
 /** Service areas as expanding photo panels (desktop) / stacked cards (mobile). */
 export function AreaPanels() {
@@ -15,11 +16,14 @@ export function AreaPanels() {
     <section data-pipe aria-labelledby="areas-heading" className="section-y relative bg-porcelain">
       <div className="container-x">
         <div className="flex flex-wrap items-end justify-between gap-6">
-          <div>
-            <p className="eyebrow text-river">Where we work</p>
-            <SplitReveal as="h2" id="areas-heading" className="t-1 mt-4 font-display font-semibold">
-              Six cities. <span className="accent font-normal text-bonnet">One standard.</span>
-            </SplitReveal>
+          <div className="flex items-end gap-5 lg:gap-7">
+            <WaterTower className="mb-1 h-auto w-11 shrink-0 sm:w-14" />
+            <div>
+              <p className="eyebrow text-river">Where we work</p>
+              <SplitReveal as="h2" id="areas-heading" className="t-1 mt-4 font-display font-semibold">
+                Six cities. <span className="accent font-normal text-bonnet">One standard.</span>
+              </SplitReveal>
+            </div>
           </div>
           <Link href="/service-areas" className="inline-flex items-center gap-2 font-semibold underline-offset-4 hover:underline">
             All service areas <ArrowUpRight size={18} />

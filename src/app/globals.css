@@ -478,6 +478,59 @@ html.lenis body {
   animation: pi-waft 1.2s ease-in-out infinite alternate;
 }
 
+/* Niche touches: water rising in the promise numbers, burner flicker, tower water, rail pipe */
+.water-text {
+  color: transparent;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 200' preserveAspectRatio='none'%3E%3Cpath d='M0 100 Q10 94 20 100 T40 100 V200 H0 Z' fill='%230e86a6'/%3E%3C/svg%3E")
+    0 var(--lvl, 100%) / 0.6em 200% repeat-x;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: water-x 2.4s linear infinite;
+}
+@keyframes water-x {
+  to {
+    background-position-x: 0.6em;
+  }
+}
+@keyframes flame-flicker {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  30% {
+    transform: scale(0.96, 1.06);
+  }
+  60% {
+    transform: scale(1.03, 0.92);
+  }
+}
+.flame-flicker {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: flame-flicker 1.6s ease-in-out infinite;
+}
+@keyframes wave-slide {
+  to {
+    transform: translateX(20px);
+  }
+}
+.wave-slide {
+  animation: wave-slide 1.8s linear infinite;
+}
+.rail-joint {
+  background: var(--color-porcelain);
+  border: 3px solid rgba(159, 195, 205, 0.7);
+  transition:
+    background-color 0.6s var(--ease-out-expo),
+    border-color 0.6s var(--ease-out-expo),
+    scale 0.6s var(--ease-liquid);
+}
+.rail-joint.is-wet {
+  background: var(--color-sunny);
+  border-color: #35c2e0;
+  scale: 1.15;
+}
+
 /* Droplet mask used by image windows and the droplet zoom scene */
 .mask-drop {
   -webkit-mask-image: url("/brand/drop-mask.svg");

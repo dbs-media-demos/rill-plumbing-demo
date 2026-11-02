@@ -13,6 +13,10 @@ import { ReviewsWall } from "@/components/sections/ReviewsWall";
 import { AreaPanels } from "@/components/sections/AreaPanels";
 import { FinalCta } from "@/components/sections/FinalCta";
 import { Pipeline } from "@/components/fx/Pipeline";
+import { PressureGauge } from "@/components/fx/PressureGauge";
+import { PilotFlame } from "@/components/fx/PilotFlame";
+import { StatRiser } from "@/components/fx/StatRiser";
+import { DrainSwirl } from "@/components/fx/DrainSwirl";
 import { Accordion } from "@/components/ui/Accordion";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight } from "@/components/ui/Icons";
@@ -65,10 +69,11 @@ export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; childre
                 Flat prices per job, never per hour. These are our most-booked jobs; your exact price is confirmed on site before
                 any work starts.
               </p>
-              <div className="mt-8">
+              <div className="mt-8 flex items-center gap-6">
                 <Button href="/pricing" variant="dark" icon={<ArrowRight size={18} />}>
                   Full price menu
                 </Button>
+                <PressureGauge className="shrink-0" />
               </div>
             </div>
             <PriceMenu groups={["drains", "heaters", "fixtures", "leaks"]} />
@@ -80,7 +85,10 @@ export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; childre
         <section data-pipe aria-labelledby="heater-heading" className="section-y relative bg-white">
           <div className="container-x grid items-center gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
             <div>
-              <p className="eyebrow text-river">Water heaters</p>
+              <div className="flex items-end gap-3">
+                <PilotFlame className="shrink-0" />
+                <p className="eyebrow text-river">Water heaters</p>
+              </div>
               <SplitReveal as="h2" id="heater-heading" className="t-1 mt-4 font-display font-semibold">
                 Tank or <span className="accent font-normal text-bonnet">tankless?</span>
               </SplitReveal>
@@ -112,8 +120,9 @@ export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; childre
         <section data-pipe aria-label={biz.preview ? biz.name : "Rill Plumbing by the numbers"} className="relative bg-abyss py-16 text-white lg:py-20" data-header="dark">
           <div className="container-x">
             <dl className="grid grid-cols-2 gap-y-10 lg:grid-cols-4">
-              {statList.map((s) => (
-                <div key={s.label} className="border-l border-white/15 pl-5">
+              {statList.map((s, i) => (
+                <div key={s.label} className="relative border-l border-white/15 pl-5">
+                  <StatRiser delay={i * 0.12} />
                   <dt className="sr-only">{s.label}</dt>
                   <dd>
                     <Counter
@@ -140,10 +149,11 @@ export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; childre
                 Good <span className="accent font-normal text-bonnet">questions.</span>
               </SplitReveal>
               <p className="mt-6 max-w-sm text-lg text-slate">Straight answers about pricing, timing and who shows up at your door.</p>
-              <div className="mt-8">
+              <div className="mt-8 flex items-center gap-6">
                 <Button href="/faq" variant="outline" icon={<ArrowRight size={18} />}>
                   All FAQs
                 </Button>
+                <DrainSwirl className="shrink-0" />
               </div>
             </div>
             <Accordion items={homeFaqs} />

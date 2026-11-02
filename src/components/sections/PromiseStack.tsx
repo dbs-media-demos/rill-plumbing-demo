@@ -30,6 +30,14 @@ export function PromiseStack() {
           { opacity: 0.55, ease: "none", scrollTrigger: { trigger: next, start: "top 95%", end: "top 25%", scrub: true } },
         );
       });
+      // Water rises inside each card's number as the card slides up.
+      cards.forEach((card) => {
+        gsap.fromTo(
+          card.querySelector("[data-water]"),
+          { "--lvl": "8%" },
+          { "--lvl": "100%", ease: "none", scrollTrigger: { trigger: card, start: "top 90%", end: "top 35%", scrub: true } },
+        );
+      });
     },
     { scope: root },
   );
@@ -60,8 +68,11 @@ export function PromiseStack() {
                   <Image src={p.image} alt={p.alt} fill sizes="(min-width: 768px) 50vw, 100vw" quality={70} className="object-cover" />
                 </div>
                 <div className="flex flex-col justify-between gap-4 p-6 sm:p-8 lg:gap-6 lg:p-10">
-                  <span className="font-display text-5xl font-semibold leading-none tracking-tighter text-spray lg:text-7xl">
+                  <span className="relative self-start font-display text-5xl font-semibold leading-none tracking-tighter text-spray lg:text-7xl">
                     {p.kicker}
+                    <span data-water aria-hidden className="water-text absolute inset-0">
+                      {p.kicker}
+                    </span>
                   </span>
                   <div>
                     <h3 className="t-3 font-display font-semibold">{p.title}</h3>

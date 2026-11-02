@@ -320,6 +320,7 @@ export const sr: Record<string, string> = {
   "Widespread faucet, new valves and P-trap.": "Nova baterija, ventili i sifon.",
 
   // ── Reviews ──
+  "Read them all": "Pročitajte sve",
   "5 out of 5 stars": "5 od 5 zvezdica",
   "4 out of 5 stars": "4 od 5 zvezdica",
   "Supply line under our upstairs vanity burst at 11:40 pm. Rosa picked up on the second ring and talked me through the shut-off in the meter box while Marcus drove over. He was here in 41 minutes, wore shoe covers the whole time and had it fixed before 1 am. Same price they quoted on the phone.":

@@ -4,6 +4,7 @@ import { reviews, type Review } from "@/content/reviews";
 import { cityBySlug } from "@/content/cities";
 import { Google, Star, ArrowRight } from "@/components/ui/Icons";
 import { Counter, SplitReveal } from "@/components/ui/Reveal";
+import { WrenchDrip } from "@/components/fx/WrenchDrip";
 import { site } from "@/lib/site";
 import { defaultBiz } from "@/lib/biz";
 import type { Biz } from "@/lib/biz-core";
@@ -69,7 +70,11 @@ export function ReviewsWall({ biz = defaultBiz }: { biz?: Biz }) {
     <section data-pipe aria-labelledby="reviews-heading" className="section-y relative overflow-hidden bg-foam">
       <div className="container-x grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
         <div>
-          <p className="eyebrow text-river">Reviews</p>
+          <div className="flex items-end justify-between gap-4">
+            <p className="eyebrow text-river">Reviews</p>
+            {/* phones: the rating row has no room for it */}
+            <WrenchDrip className="-mb-3 h-auto w-16 shrink-0 sm:hidden" />
+          </div>
           <SplitReveal as="h2" id="reviews-heading" className="t-1 mt-4 font-display font-semibold">
             {biz.preview ? (sr ? "Komšije, " : `${biz.area}, `) : "North Dallas, "}
             <span className="accent font-normal text-bonnet">{sr ? "njihovim rečima." : "in their words."}</span>
@@ -77,6 +82,7 @@ export function ReviewsWall({ biz = defaultBiz }: { biz?: Biz }) {
         </div>
         {(biz.rating || !biz.preview) && (
         <div className="flex items-center gap-5">
+          <WrenchDrip className="hidden shrink-0 sm:block" />
           <Counter value={(biz.rating ?? { value: site.rating }).value} decimals={1} className="font-display text-8xl font-semibold leading-none tracking-tighter" />
           <div>
             <span className="flex text-sunny" aria-hidden>

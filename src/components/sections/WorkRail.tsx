@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { work } from "@/content/company";
 import { useBiz } from "@/components/preview/BizContext";
 import { ArrowRight } from "@/components/ui/Icons";
@@ -13,12 +13,37 @@ export function WorkRail() {
   const biz = useBiz();
   const root = useRef<HTMLElement>(null);
   const track = useRef<HTMLDivElement>(null);
+  const pipe = useRef<HTMLDivElement>(null);
+
+  // A pipe under the rail fills with water as you move through the jobs; each joint lights up as the water reaches it.
+  const flow = (p: number) => {
+    const el = pipe.current;
+    if (!el) return;
+    el.style.setProperty("--flow", String(p));
+    el.querySelectorAll<HTMLElement>("[data-at]").forEach((j) => j.classList.toggle("is-wet", Number(j.dataset.at) <= p + 0.001));
+  };
+  const pinned = () => !prefersReducedMotion() && !isTouch() && window.innerWidth >= 1024;
+
+  useEffect(() => {
+    const tr = track.current;
+    if (!tr) return;
+    if (prefersReducedMotion()) return flow(1);
+    if (pinned()) return;
+    const onScroll = () => {
+      const max = tr.scrollWidth - tr.clientWidth;
+      flow(max > 0 ? tr.scrollLeft / max : 1);
+    };
+    onScroll();
+    tr.addEventListener("scroll", onScroll, { passive: true });
+    return () => tr.removeEventListener("scroll", onScroll);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useGSAP(
     () => {
       const el = root.current;
       const tr = track.current;
-      if (!el || !tr || prefersReducedMotion() || isTouch() || window.innerWidth < 1024) return;
+      if (!el || !tr || !pinned()) return;
       const distance = () => tr.scrollWidth - window.innerWidth + 64;
       const tween = gsap.to(tr, {
         x: () => -distance(),
@@ -30,6 +55,7 @@ export function WorkRail() {
           pin: true,
           scrub: 0.6,
           invalidateOnRefresh: true,
+          onUpdate: (self) => flow(self.progress),
         },
       });
       // Each photo drifts inside its frame as the rail moves.
@@ -100,6 +126,23 @@ export function WorkRail() {
           </Link>
         ))}
         <div className="w-4 shrink-0 lg:w-16" aria-hidden />
+      </div>
+
+      <div className="container-x mt-8 lg:mt-10" aria-hidden>
+        <div ref={pipe} className="relative h-2 rounded-full bg-tide/35">
+          <div
+            className="absolute inset-0 origin-left rounded-full bg-gradient-to-r from-river-2 to-[#35c2e0] shadow-[0_0_8px_rgba(53,194,224,0.5)]"
+            style={{ transform: "scaleX(var(--flow, 0))" }}
+          />
+          {items.map((w, i) => (
+            <span
+              key={w.id}
+              data-at={i / (items.length - 1)}
+              className="rail-joint absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+              style={{ left: `${(i / (items.length - 1)) * 100}%` }}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );
