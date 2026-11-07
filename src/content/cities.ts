@@ -221,3 +221,7 @@ export const cities: City[] = [
 export const cityBySlug = (slug: string) => cities.find((c) => c.slug === slug);
 
 export const zipToCity = (zip: string) => cities.find((c) => c.zips.includes(zip.trim()));
+
+/** What the map and the area panels need. Client components take these as props, so the city pages' copy stays out of their JS. */
+export type CityLink = Pick<City, "slug" | "name" | "image" | "imageAlt" | "x" | "y" | "eta" | "zips" | "neighborhoods">;
+export const cityLinks: CityLink[] = cities.map(({ slug, name, image, imageAlt, x, y, eta, zips, neighborhoods }) => ({ slug, name, image, imageAlt, x, y, eta, zips, neighborhoods }));

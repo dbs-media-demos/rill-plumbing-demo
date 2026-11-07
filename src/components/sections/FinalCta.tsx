@@ -30,16 +30,16 @@ export function FinalCta({
     <section data-pipe data-header="dark" aria-labelledby="cta-heading" className="on-dark relative isolate overflow-hidden bg-abyss text-white">
       <Image src={image} alt={imageAlt} fill sizes="100vw" quality={65} className="-z-20 object-cover" />
       <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(6,34,47,0.94)_0%,rgba(6,34,47,0.78)_45%,rgba(6,34,47,0.35)_100%)]" />
-      <div className="container-x py-28 lg:py-40">
+      <div className="container-x py-28 lg:py-40 phone:py-8">
         <div className="max-w-3xl">
           <OpenBadge tone="dark" />
-          <SplitReveal as="h2" id="cta-heading" className="t-1 mt-6 font-display font-semibold">
+          <SplitReveal as="h2" id="cta-heading" className="t-1 mt-6 font-display font-semibold phone:mt-3">
             {title}
           </SplitReveal>
           <Reveal>
-            <p className="mt-6 max-w-xl text-lg text-white/80">{body}</p>
-            <div className="relative mt-10 inline-flex flex-wrap gap-3">
-              <span aria-hidden className="pointer-events-none absolute left-24 top-1/2 -z-10">
+            <p className="mt-6 max-w-xl text-lg text-white/80 phone:mt-3 phone:text-[0.98rem]">{body}</p>
+            <div className="relative mt-10 inline-flex flex-wrap gap-3 phone:mt-4 phone:flex phone:flex-nowrap phone:gap-2 phone:[&>a]:flex-auto phone:[&>a]:whitespace-nowrap phone:[&>a]:!px-3 phone:[&>a]:!py-3 phone:[&>a]:!text-[0.92rem] phone:[&_svg]:hidden">
+              <span aria-hidden className="pointer-events-none absolute left-24 top-1/2 -z-10 phone:hidden">
                 {[0, 1, 2].map((i) => (
                   <span
                     key={i}

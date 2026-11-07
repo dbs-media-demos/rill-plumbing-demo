@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { SiteChrome } from "@/components/layout/SiteChrome";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight, Phone } from "@/components/ui/Icons";
 import { site, telHref } from "@/lib/site";

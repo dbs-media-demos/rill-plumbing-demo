@@ -56,6 +56,24 @@ export const sr: Record<string, string> = {
   "No overtime charges, ever": "Bez doplata za noć i vikend",
   "1-year labor warranty": "Godinu dana garancije na rad",
 
+  // ── Phone homepage: fee, form ──
+  "$0": "0 din",
+  "$79": "2.500 din",
+  "trip fee": "dolazak",
+  overtime: "doplata",
+  "diagnostic, waived": "pregled, ne plaća se uz popravku",
+  "Tell us": "Recite nam",
+  "what's wrong.": "šta nije u redu.",
+  Name: "Ime",
+  Phone: "Telefon",
+  "What's happening?": "Šta se dešava?",
+  "Sending…": "Šaljemo…",
+  "Tell us your name.": "Napišite svoje ime.",
+  "Enter a valid phone number.": "Unesite ispravan broj telefona.",
+  "Request received.": "Zahtev je primljen.",
+  "A dispatcher calls you back within minutes. For anything wet, call now: we answer 24/7.": "Dispečer vas zove za nekoliko minuta. Ako curi, pozovite odmah: javljamo se 24/7.",
+  "Concept site by Scale by Noon: nothing was actually sent.": "Koncept sajt, Scale by Noon: ništa nije zaista poslato.",
+
   // ── The way every job starts ──
   "The Rill way": "Naš način",
   "Every job starts": "Svaki posao počinje",

@@ -8,7 +8,7 @@
 - Folder: DBS Media Portfolio/Demo Websites/plumbing
 - Stack: Next.js 16.3.6, React 19.2.8, Tailwind v4, GSAP 3 (ScrollTrigger, SplitText, Flip, MotionPath), Lenis, WebGL
 - Palette: #06222F abyss · #0A6B85 river · #CDEFF5 spray · #F6F8F7 porcelain · #5A48E0 bluebonnet (CTA) · #FFCB47 sunny
-  Fonts: Bricolage Grotesque (display, self-hosted static subset) · Figtree (body) · Fraunces Italic (accent)
+  Fonts: Bricolage Grotesque (display) · Figtree (body), one self-hosted Latin + Latin Extended file each · Fraunces Italic (accent, desktop only)
 - Pages: 27 routes, all statically generated, plus the 404 and a dynamic OG image route.
   Home, Services + 9 service pages, Pricing, Our work, About, Reviews, FAQ, Emergency tips, Book, Contact, Service areas + 6 city pages, Privacy.
 - Signature features:
@@ -38,6 +38,14 @@ SR summary: Koncept sajt za vodoinstalatersku firmu iz severnog Dalasa, napravlj
 
 ## Screenshots
 handoff/desktop-home.png, handoff/desktop-feature.png (ETA map dispatch), handoff/mobile-home.png, handoff/scroll.mp4
+
+## Phones
+"Phone" is under 768 px, or a touch screen under 1024 px: `lib/phone.ts` and the `phone:` variant in `globals.css` (same query, change both). From 1024 px up it stays the desktop site.
+- Section order: the source order is the desktop's; `phone:order-*` in `HomeContent` sets the phone's (problems, services, licence and address, reviews, fee, photos, form, FAQ).
+- No pinned scenes, Pipeline, WebGL, Lenis, GSAP or Fraunces on first load. `lib/gsap` loads GSAP on desktop only, and on phones when a visitor drives the ETA map. Hero: a still, never faded in.
+- Motion: tap feedback, one fade-and-rise per section (`SectionRise`), swipe rails (`.rail`), the tools, and one niche touch (the price gauge's needle).
+- The concept marker sits in the page on phones (hero photo, footer) so it never floats over anything.
+- Client components get `serviceLinks` / `cityLinks` as props: importing `content/services` or `content/cities` into one ships the whole service and city copy.
 
 ## Notes for maintainers
 - Business facts live in `src/lib/site.ts`. Content lives in `src/content/*` (services, problems, pricing, reviews, cities, FAQs, team/work).

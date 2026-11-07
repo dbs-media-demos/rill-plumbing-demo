@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useRef, type ReactNode, type MouseEvent, type PointerEvent } from "react";
 import clsx from "clsx";
 

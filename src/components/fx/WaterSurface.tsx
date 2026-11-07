@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
+import { isPhone } from "@/lib/phone";
 
 /*
  * Interactive water surface.
@@ -294,6 +295,8 @@ export function WaterSurface({ src, srcSmall, className, interactive = true }: P
   }
 
   useEffect(() => {
+    // Phones get a sharp still instead (HomeHero).
+    if (isPhone()) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- media query is client-only
       setState("fallback");

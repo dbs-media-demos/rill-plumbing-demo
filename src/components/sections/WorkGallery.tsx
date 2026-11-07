@@ -5,29 +5,36 @@ import { useRef, useState } from "react";
 import clsx from "clsx";
 import { work, type WorkItem } from "@/content/company";
 import { Close } from "@/components/ui/Icons";
-import { Flip } from "gsap/Flip";
-import { gsap, useGSAP, prefersReducedMotion } from "@/lib/gsap";
+import type { Flip as FlipType } from "gsap/Flip";
+import { gsap, loadGsap, useGSAP, prefersReducedMotion } from "@/lib/gsap";
 
-if (typeof window !== "undefined") gsap.registerPlugin(Flip);
+let Flip: typeof FlipType | null = null;
+const loadFlip = () =>
+  loadGsap()
+    .then(() => import("gsap/Flip"))
+    .then((m) => {
+      Flip = m.Flip;
+      gsap.registerPlugin(Flip);
+    });
 
 const cats = ["All", "Bathrooms", "Kitchens", "Water heaters", "Repipes & leaks", "Emergency"] as const;
 
 /** Filterable project gallery. Filtering animates with GSAP Flip; tapping opens a lightbox. */
 export function WorkGallery() {
   const grid = useRef<HTMLUListElement>(null);
-  const flipState = useRef<Flip.FlipState | null>(null);
+  const flipState = useRef<ReturnType<typeof FlipType.getState> | null>(null);
   const [cat, setCat] = useState<(typeof cats)[number]>("All");
   const [open, setOpen] = useState<WorkItem | null>(null);
 
   const choose = (c: (typeof cats)[number]) => {
     if (c === cat) return;
-    if (grid.current && !prefersReducedMotion()) flipState.current = Flip.getState(grid.current.querySelectorAll("[data-flip]"));
+    if (Flip && grid.current && !prefersReducedMotion()) flipState.current = Flip.getState(grid.current.querySelectorAll("[data-flip]"));
     setCat(c);
   };
 
   useGSAP(
     () => {
-      if (!flipState.current) return;
+      if (!flipState.current || !Flip) return;
       Flip.from(flipState.current, {
         duration: 0.8,
         ease: "expo.out",
@@ -38,7 +45,7 @@ export function WorkGallery() {
       });
       flipState.current = null;
     },
-    { dependencies: [cat], scope: grid },
+    { dependencies: [cat], scope: grid, before: loadFlip },
   );
 
   const items = work.filter((w) => cat === "All" || w.category === cat);

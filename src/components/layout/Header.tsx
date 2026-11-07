@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -8,9 +8,10 @@ import clsx from "clsx";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight, ArrowUpRight, Close, Menu, Phone } from "@/components/ui/Icons";
-import { services } from "@/content/services";
+import type { ServiceLink } from "@/content/services";
 import { useBiz } from "@/components/preview/BizContext";
 import { telOf } from "@/lib/biz-core";
+import { isPhone } from "@/lib/phone";
 import { OpenBadge } from "./OpenBadge";
 
 const nav = [
@@ -28,7 +29,7 @@ const mobileExtra = [
   { label: "Contact", href: "/contact" },
 ];
 
-export function Header() {
+export function Header({ services }: { services: ServiceLink[] }) {
   const biz = useBiz();
   const telHref = telOf(biz) ?? "";
   const pathname = usePathname();
@@ -50,6 +51,11 @@ export function Header() {
       setScrolled(y > 24);
       setHidden(y > 480 && y > lastY + 2 ? true : y < lastY - 2 ? false : (h) => h);
       lastY = y;
+      // Phones: once scrolled it's one solid bar, whatever is under it
+      if (isPhone() && y > 24) {
+        setTheme("dark");
+        return;
+      }
       const els = document.elementsFromPoint(window.innerWidth / 2, 40);
       const hit = els.find((e) => !ref.current?.contains(e) && e.closest("[data-header]"));
       const t = hit?.closest("[data-header]")?.getAttribute("data-header");
@@ -104,18 +110,19 @@ export function Header() {
         style={{ viewTransitionName: "site-header" }}
         className={clsx(
           "fixed inset-x-0 top-0 z-50 transition-transform duration-700 ease-[var(--ease-out-expo)]",
+          scrolled && "phone:bg-abyss",
           hidden && !open && !mega ? "-translate-y-[120%]" : "translate-y-0",
         )}
         onMouseLeave={() => setMega(false)}
       >
-        <div className="container-x pt-3">
+        <div className={clsx("container-x pt-3", scrolled && "phone:py-1")}>
           <div
             className={clsx(
               "flex h-[3.75rem] items-center justify-between gap-4 rounded-full pl-5 pr-2 transition-[background-color,box-shadow,color] duration-500",
               dark ? "text-white" : "text-abyss",
               scrolled || mega
                 ? dark
-                  ? "bg-abyss/55 shadow-[0_10px_40px_-20px_rgba(0,0,0,0.6)] backdrop-blur-xl"
+                  ? "bg-abyss/55 shadow-[0_10px_40px_-20px_rgba(0,0,0,0.6)] backdrop-blur-xl phone:bg-transparent phone:shadow-none phone:backdrop-blur-none"
                   : "bg-white/80 shadow-[0_10px_40px_-18px_rgba(6,34,47,0.35)] backdrop-blur-xl"
                 : "bg-transparent",
             )}

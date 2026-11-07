@@ -464,3 +464,7 @@ export const services: Service[] = [
 ];
 
 export const serviceBySlug = (slug: string) => services.find((s) => s.slug === slug);
+
+/** What menus and lists need. Client components take these as props, so the service pages' copy stays out of their JS. */
+export type ServiceLink = Pick<Service, "slug" | "name" | "short" | "from" | "image" | "imageAlt">;
+export const serviceLinks: ServiceLink[] = services.map(({ slug, name, short, from, image, imageAlt }) => ({ slug, name, short, from, image, imageAlt }));

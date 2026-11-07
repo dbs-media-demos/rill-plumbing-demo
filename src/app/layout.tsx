@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Figtree, Fraunces } from "next/font/google";
+import { Fraunces } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Cursor } from "@/components/layout/Cursor";
@@ -7,7 +7,8 @@ import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { noindex, site, siteUrl } from "@/lib/site";
 import { ogImageUrl } from "@/lib/seo";
 
-// Static Bricolage Grotesque 600 (opsz 96), subset to Latin: ~18 KB instead of the ~77 KB variable file.
+// Bricolage Grotesque 600 (opsz 14, the cut Google serves) and variable Figtree, one file each: Latin plus
+// Latin Extended (č ć š ž đ for Serbian previews). 22 KB + 23 KB, and all the fonts a phone downloads.
 const display = localFont({
   src: "./fonts/bricolage-600.woff2",
   weight: "600",
@@ -16,17 +17,21 @@ const display = localFont({
   display: "swap",
   fallback: ["Arial", "sans-serif"],
 });
-// č ć š ž đ for Serbian previews: the local subset above is Latin-only, so these come from Google's
-// latin-ext Bricolage (listed first in --font-display; only downloaded when such letters appear).
-const displayExt = Bricolage_Grotesque({ subsets: ["latin-ext"], weight: "600", variable: "--font-bricolage-ext", display: "swap", preload: false });
-const sans = Figtree({ subsets: ["latin", "latin-ext"], variable: "--font-figtree", display: "swap" });
+const sans = localFont({
+  src: "./fonts/figtree-var.woff2",
+  weight: "300 900",
+  style: "normal",
+  variable: "--font-figtree",
+  display: "swap",
+  fallback: ["Arial", "sans-serif"],
+});
 const serif = Fraunces({
   subsets: ["latin", "latin-ext"],
   style: ["italic"],
   axes: ["SOFT", "WONK"],
   variable: "--font-fraunces",
   display: "swap",
-  // Accent words only: never the LCP, so don't compete with the critical path.
+  // Accent words only: never the LCP, so don't compete with the critical path. Phones never request it (see .accent).
   preload: false,
 });
 
@@ -59,7 +64,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-US" className={`${display.variable} ${displayExt.variable} ${sans.variable} ${serif.variable}`}>
+    <html lang="en-US" className={`${display.variable} ${sans.variable} ${serif.variable}`}>
       <body>
         <SmoothScroll />
         {/* Header, footer and the rest come from (site)/layout or for/[token]/layout (SiteChrome) */}

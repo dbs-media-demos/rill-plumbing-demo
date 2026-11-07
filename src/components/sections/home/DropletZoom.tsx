@@ -69,23 +69,23 @@ export function DropletZoom() {
       aria-labelledby="promise-heading"
       className="group relative bg-porcelain data-[enhanced=true]:h-[320vh]"
     >
-      <div data-stage data-header="dark" className="relative flex min-h-[100svh] items-center justify-center overflow-hidden group-data-[enhanced=true]:sticky group-data-[enhanced=true]:top-0 group-data-[enhanced=true]:h-[100svh]">
+      <div data-stage data-header="dark" className="relative flex min-h-[100svh] items-center justify-center overflow-hidden group-data-[enhanced=true]:sticky group-data-[enhanced=true]:top-0 group-data-[enhanced=true]:h-[100svh] phone:min-h-0 phone:flex-col phone:items-stretch">
         {/* Intro copy that frames the drop */}
-        <div className="pointer-events-none absolute inset-x-0 top-[14vh] z-10 hidden text-center group-data-[enhanced=true]:block">
-          <p data-intro className="eyebrow text-river">
+        <div className="pointer-events-none absolute inset-x-0 top-[14vh] z-10 hidden text-center group-data-[enhanced=true]:block phone:relative phone:inset-auto phone:block phone:bg-porcelain phone:py-6 phone:text-left">
+          <p data-intro className="eyebrow text-river phone:px-4">
             The Rill way
           </p>
-          <p data-intro className="t-2 mx-auto mt-4 max-w-4xl px-4 font-display font-semibold text-abyss">
+          <p data-intro className="t-2 mx-auto mt-4 max-w-4xl px-4 font-display font-semibold text-abyss phone:mt-2">
             Every job starts <span className="accent font-normal text-bonnet">exactly</span> the same way.
           </p>
         </div>
 
         <div
           data-window
-          className="absolute inset-0 [mask-image:url(/brand/drop-mask.svg)] [mask-position:50%_var(--py,60%)] [mask-repeat:no-repeat] [mask-size:auto_var(--m,560vmax)] [-webkit-mask-image:url(/brand/drop-mask.svg)] [-webkit-mask-position:50%_var(--py,60%)] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:auto_var(--m,560vmax)]"
+          className="absolute inset-0 [mask-image:url(/brand/drop-mask.svg)] [mask-position:50%_var(--py,60%)] [mask-repeat:no-repeat] [mask-size:auto_var(--m,560vmax)] [-webkit-mask-image:url(/brand/drop-mask.svg)] [-webkit-mask-position:50%_var(--py,60%)] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:auto_var(--m,560vmax)] phone:[-webkit-mask-image:none] phone:[mask-image:none]"
           style={{ ["--m" as string]: "560vmax" }}
         >
-          <div data-img className="absolute inset-0 will-change-transform">
+          <div data-img className="absolute inset-0 will-change-transform phone:will-change-auto">
             <Image
               src="/images/plumber-bathroom.jpg"
               alt="Rill plumber at work in a bright modern bathroom"
@@ -95,10 +95,10 @@ export function DropletZoom() {
               className="object-cover"
             />
           </div>
-          <div data-shade className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,34,47,0.85)_0%,rgba(6,34,47,0.35)_60%,rgba(6,34,47,0.1)_100%)]" />
+          <div data-shade className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,34,47,0.85)_0%,rgba(6,34,47,0.35)_60%,rgba(6,34,47,0.1)_100%)] phone:bg-none phone:bg-abyss/70" />
         </div>
 
-        <div className="on-dark container-x relative z-10 py-24 text-white">
+        <div className="on-dark container-x relative z-10 py-24 text-white phone:py-7">
           <h2 id="promise-heading" className="sr-only">
             How every Rill job starts
           </h2>
@@ -111,7 +111,7 @@ export function DropletZoom() {
               </li>
             ))}
           </ul>
-          <p data-rule className="mt-8 max-w-md text-lg text-white/85">
+          <p data-rule className="mt-8 max-w-md text-lg text-white/85 phone:mt-4 phone:text-[0.98rem]">
             Flat price before we touch a thing. Floors protected, mess cleaned, 1-year labor warranty on everything we do.
           </p>
         </div>

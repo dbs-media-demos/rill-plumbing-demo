@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { PageShell } from "@/components/layout/PageShell";
 import { PageHero } from "@/components/sections/PageHero";
 import { ReviewsBrowser } from "@/components/sections/ReviewsBrowser";
+import { serviceLinks } from "@/content/services";
 import { FinalCta } from "@/components/sections/FinalCta";
 import { Google, Star } from "@/components/ui/Icons";
 import { Reveal } from "@/components/ui/Reveal";
@@ -76,7 +77,7 @@ export default function ReviewsPage() {
           </Reveal>
 
           <div className="mt-14">
-            <ReviewsBrowser />
+            <ReviewsBrowser services={serviceLinks} />
           </div>
           <p className="mt-6 text-sm text-slate">Reviews shown are fictional examples written for this concept site.</p>
         </div>

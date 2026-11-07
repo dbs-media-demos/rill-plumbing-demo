@@ -31,7 +31,17 @@ export function OpenBadge({ className, tone = "light", compact }: { className?: 
       <span className="pulse-dot" style={{ ["--dot" as string]: "#3ddc97" }} aria-hidden />
       <span>
         <strong className="font-semibold">Open now</strong> · plumbers on call 24/7
-        {!compact && label && <span className={tone === "dark" ? "text-white/60" : "text-slate"}> · {label}</span>}
+        {/* Filled in by the browser: phones keep its line reserved so nothing below it moves */}
+        {!compact && (
+          <span className={clsx(tone === "dark" ? "text-white/60" : "text-slate", "phone:block phone:min-h-[1.5em] phone:leading-[1.5]")}>
+            {label && (
+              <>
+                <span className="phone:hidden"> · </span>
+                {label}
+              </>
+            )}
+          </span>
+        )}
       </span>
     </span>
   );

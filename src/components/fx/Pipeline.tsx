@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
-import { ScrollTrigger, prefersReducedMotion } from "@/lib/gsap";
+import { ScrollTrigger, whenGsap, prefersReducedMotion } from "@/lib/gsap";
+import { isPhone } from "@/lib/phone";
 
 /*
  * The Pipeline: one continuous pipe runs down the page beside the sections in
@@ -76,7 +77,7 @@ export function Pipeline({ children }: { children: ReactNode }) {
   useEffect(() => {
     const el = wrap.current;
     const s = svg.current;
-    if (!el || !s) return;
+    if (!el || !s || isPhone()) return;
     const base = s.querySelector<SVGPathElement>("[data-base]")!;
     const water = s.querySelector<SVGPathElement>("[data-water]")!;
     const shine = s.querySelector<SVGPathElement>("[data-shine]")!;
@@ -152,12 +153,12 @@ export function Pipeline({ children }: { children: ReactNode }) {
     measure();
     const ro = new ResizeObserver(() => measure());
     ro.observe(el);
-    ScrollTrigger.addEventListener("refresh", measure);
+    whenGsap(() => ScrollTrigger.addEventListener("refresh", measure));
     window.addEventListener("scroll", onScroll, { passive: true });
     const late = window.setTimeout(measure, 1200);
     return () => {
       ro.disconnect();
-      ScrollTrigger.removeEventListener("refresh", measure);
+      ScrollTrigger?.removeEventListener("refresh", measure);
       window.removeEventListener("scroll", onScroll);
       window.clearTimeout(late);
       if (raf) cancelAnimationFrame(raf);
@@ -167,7 +168,7 @@ export function Pipeline({ children }: { children: ReactNode }) {
   return (
     <div ref={wrap} className="pipeline relative">
       {children}
-      <svg ref={svg} aria-hidden className="pointer-events-none absolute left-0 top-0 z-20 w-full overflow-visible" fill="none">
+      <svg ref={svg} aria-hidden className="pointer-events-none absolute left-0 top-0 z-20 w-full overflow-visible phone:hidden" fill="none">
         <defs>
           <linearGradient id="pipe-water" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#0e86a6" />

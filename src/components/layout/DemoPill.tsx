@@ -25,7 +25,7 @@ export function DemoPill() {
   if (!show) return null;
 
   return (
-    <div className="anim-fade fixed bottom-[5.6rem] left-3 z-40 flex items-center rounded-full bg-white/90 py-1 pl-3.5 pr-1 text-[0.8rem] text-abyss shadow-[0_10px_30px_-10px_rgba(6,34,47,0.4)] ring-1 ring-abyss/10 backdrop-blur-md md:bottom-5 md:left-5">
+    <div className="anim-fade fixed bottom-[5.6rem] left-3 z-40 flex items-center rounded-full bg-white/90 py-1 pl-3.5 pr-1 text-[0.8rem] text-abyss shadow-[0_10px_30px_-10px_rgba(6,34,47,0.4)] ring-1 ring-abyss/10 backdrop-blur-md md:bottom-5 md:left-5 phone:hidden">
       <a href={agencyUrl} target="_blank" rel="noopener" className="font-medium hover:underline">
         {biz.preview ? (
           <span className="inline-block max-w-[15rem] truncate align-bottom sm:max-w-none">

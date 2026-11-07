@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState, useCallback, useEffect, type KeyboardEvent, type PointerEvent } from "react";
+import { useRef, useState, useCallback, type KeyboardEvent, type PointerEvent } from "react";
 import clsx from "clsx";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight, Check } from "@/components/ui/Icons";
-import { gsap, ScrollTrigger, prefersReducedMotion } from "@/lib/gsap";
+import { gsap, ScrollTrigger, useGSAP, prefersReducedMotion } from "@/lib/gsap";
 
 /* ─────────────── Tank vs tankless drag comparison ─────────────── */
 
@@ -21,7 +21,7 @@ export function HeaterCompare() {
   }, []);
 
   // A gentle "try me" sweep the first time it scrolls into view.
-  useEffect(() => {
+  useGSAP(() => {
     const el = box.current;
     if (!el || prefersReducedMotion()) return;
     const obj = { v: 50 };
@@ -38,7 +38,7 @@ export function HeaterCompare() {
       },
     });
     return () => st.kill();
-  }, []);
+  });
 
   const onDown = (e: PointerEvent<HTMLDivElement>) => {
     dragging.current = true;
@@ -56,7 +56,7 @@ export function HeaterCompare() {
     <div
       ref={box}
       data-cursor="Drag"
-      className="relative aspect-[4/5] touch-pan-y select-none overflow-hidden rounded-[2rem] bg-abyss sm:aspect-[16/10]"
+      className="relative aspect-[4/5] touch-pan-y select-none overflow-hidden rounded-[2rem] bg-abyss sm:aspect-[16/10] phone:!aspect-[9/5] phone:rounded-[1.5rem]"
       onPointerDown={onDown}
       onPointerMove={onMove}
       onPointerUp={onUp}
@@ -68,14 +68,14 @@ export function HeaterCompare() {
       </div>
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-abyss/80 via-transparent to-abyss/20" />
 
-      <div className="pointer-events-none absolute bottom-5 left-5 max-w-[42%] text-white">
+      <div className="pointer-events-none absolute bottom-5 left-5 max-w-[42%] text-white phone:bottom-3 phone:left-3.5">
         <p className="eyebrow text-spray">Tank</p>
-        <p className="mt-1 font-display text-2xl font-semibold tracking-tight sm:text-3xl">From $1,895</p>
+        <p className="mt-1 font-display text-2xl font-semibold tracking-tight sm:text-3xl phone:!text-[1.2rem]">From $1,895</p>
         <p className="mt-1 hidden text-sm text-white/80 sm:block">Lower upfront · 8–12 yrs · 40–75 gal stored</p>
       </div>
-      <div className="pointer-events-none absolute bottom-5 right-5 max-w-[42%] text-right text-white">
+      <div className="pointer-events-none absolute bottom-5 right-5 max-w-[42%] text-right text-white phone:bottom-3 phone:right-3.5">
         <p className="eyebrow text-spray">Tankless</p>
-        <p className="mt-1 font-display text-2xl font-semibold tracking-tight sm:text-3xl">From $3,900</p>
+        <p className="mt-1 font-display text-2xl font-semibold tracking-tight sm:text-3xl phone:!text-[1.2rem]">From $3,900</p>
         <p className="mt-1 hidden text-sm text-white/80 sm:block">Endless hot water · up to 20 yrs · wall-mounted</p>
       </div>
 
@@ -90,7 +90,7 @@ export function HeaterCompare() {
           aria-valuenow={Math.round(pos)}
           aria-valuetext={`${Math.round(pos)}% tank, ${100 - Math.round(pos)}% tankless`}
           onKeyDown={onKey}
-          className="absolute top-1/2 grid size-14 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize place-items-center rounded-full bg-white text-abyss shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
+          className="absolute top-1/2 grid size-14 phone:size-11 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize place-items-center rounded-full bg-white text-abyss shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
         >
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
             <path d="m9 6-6 6 6 6M15 6l6 6-6 6" />

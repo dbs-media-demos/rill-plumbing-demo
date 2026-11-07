@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { ArrowRight, Check, Clock, Phone } from "@/components/ui/Icons";
 import { Parallax, Reveal, ScrubWords, SplitReveal } from "@/components/ui/Reveal";
 import { JsonLd } from "@/components/ui/JsonLd";
-import { serviceBySlug, services } from "@/content/services";
+import { serviceBySlug, services, serviceLinks } from "@/content/services";
 import { buildMetadata } from "@/lib/seo";
 import { faqSchema, graph, serviceSchema, webPageSchema } from "@/lib/schema";
 import { telHref } from "@/lib/site";
@@ -123,7 +123,7 @@ export default async function ServicePage({ params }: Params) {
 
       {/* What's included */}
       <section data-header="dark" className="on-dark section-y relative overflow-hidden bg-abyss text-white" aria-labelledby="included-heading">
-        <div aria-hidden className="pointer-events-none absolute -left-40 top-0 size-[36rem] rounded-full bg-river/25 blur-[120px]" />
+        <div aria-hidden className="pointer-events-none absolute -left-40 top-0 size-[36rem] rounded-full bg-river/25 blur-[120px] phone:hidden" />
         <div className="container-x relative">
           <p className="eyebrow text-spray">Every {s.short.toLowerCase()} job includes</p>
           <SplitReveal as="h2" id="included-heading" className="t-2 mt-4 max-w-3xl font-display font-semibold">
@@ -195,7 +195,7 @@ export default async function ServicePage({ params }: Params) {
         </section>
       )}
 
-      {s.slug === "emergency-plumbing" && <ProblemPicker initial="burst" compact />}
+      {s.slug === "emergency-plumbing" && <ProblemPicker services={serviceLinks} initial="burst" compact />}
 
       <section className="section-y bg-white" aria-labelledby="svc-faq">
         <div className="container-x grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">

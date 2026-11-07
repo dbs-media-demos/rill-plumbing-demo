@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import clsx from "clsx";
 import { problems } from "@/content/problems";
-import { services, serviceBySlug } from "@/content/services";
-import { cities, cityBySlug, zipToCity } from "@/content/cities";
+import type { ServiceLink } from "@/content/services";
+import type { CityLink } from "@/content/cities";
 import { ProblemIcon } from "@/components/sections/ProblemIcons";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight, Check, Phone } from "@/components/ui/Icons";
@@ -53,7 +53,7 @@ const formatPhone = (s: string) => {
   return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
 };
 
-export function BookingForm() {
+export function BookingForm({ services, cities }: { services: ServiceLink[]; cities: CityLink[] }) {
   const [step, setStep] = useState(0);
   const [data, setData] = useState<Data>(initial);
   const [errors, setErrors] = useState<Partial<Record<keyof Data, string>>>({});
@@ -67,16 +67,17 @@ export function BookingForm() {
     const q = new URLSearchParams(window.location.search);
     const problem = q.get("problem") ?? "";
     const service = q.get("service") ?? "";
-    const city = cityBySlug(q.get("city") ?? "");
+    const city = cities.find((c) => c.slug === q.get("city"));
     // eslint-disable-next-line react-hooks/set-state-in-effect -- URL is only readable after hydration (page is static)
     setData((d) => ({
       ...d,
       problem: problems.some((p) => p.id === problem) ? problem : d.problem,
-      service: serviceBySlug(service) ? service : d.service,
+      service: services.some((s) => s.slug === service) ? service : d.service,
       zip: city ? city.zips[0] : d.zip,
       when: problem && problems.find((p) => p.id === problem)?.urgency === 3 ? "now" : d.when,
     }));
     setToday(new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on load; the lists are constants
   }, []);
 
   const set = <K extends keyof Data>(k: K, v: Data[K]) => {
@@ -84,9 +85,9 @@ export function BookingForm() {
     setErrors((e) => ({ ...e, [k]: undefined }));
   };
 
-  const zipCity = useMemo(() => (digits(data.zip).length === 5 ? zipToCity(digits(data.zip)) : undefined), [data.zip]);
+  const zipCity = useMemo(() => (digits(data.zip).length === 5 ? cities.find((c) => c.zips.includes(digits(data.zip))) : undefined), [data.zip, cities]);
   const problem = problems.find((p) => p.id === data.problem);
-  const service = serviceBySlug(data.service || problem?.service || "");
+  const service = services.find((s) => s.slug === (data.service || problem?.service));
 
   const validate = (s: number) => {
     const e: Partial<Record<keyof Data, string>> = {};

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { PageShell } from "@/components/layout/PageShell";
 import { Breadcrumbs } from "@/components/sections/PageHero";
 import { BookingForm } from "@/components/forms/BookingForm";
+import { serviceLinks } from "@/content/services";
+import { cityLinks } from "@/content/cities";
 import { OpenBadge } from "@/components/layout/OpenBadge";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { buildMetadata } from "@/lib/seo";
@@ -27,7 +29,7 @@ export default function BookPage() {
         )}
       />
       <section data-header="light" className="relative overflow-hidden bg-porcelain pb-24 pt-32 lg:pt-40">
-        <div aria-hidden className="pointer-events-none absolute -right-40 -top-40 size-[36rem] rounded-full bg-spray/60 blur-[100px]" />
+        <div aria-hidden className="pointer-events-none absolute -right-40 -top-40 size-[36rem] rounded-full bg-spray/60 blur-[100px] phone:hidden" />
         <div className="container-x relative">
           <div className="anim-fade">
             <Breadcrumbs
@@ -54,7 +56,7 @@ export default function BookPage() {
             <OpenBadge />
           </div>
           <div className="anim-fade mt-12" style={{ ["--d" as string]: "0.3s" }}>
-            <BookingForm />
+            <BookingForm services={serviceLinks} cities={cityLinks} />
           </div>
         </div>
       </section>

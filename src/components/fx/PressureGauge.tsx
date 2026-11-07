@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { gsap, ScrollTrigger, useGSAP, prefersReducedMotion } from "@/lib/gsap";
+import { isPhone } from "@/lib/phone";
 
 const CX = 50;
 const CY = 54;
@@ -32,6 +33,23 @@ export function PressureGauge({ className }: { className?: string }) {
     { scope: root },
   );
 
+  // Phones: the same swing as a small CSS animation, the niche touch that stays (globals.css).
+  useEffect(() => {
+    const el = root.current;
+    const needle = el?.querySelector("[data-needle]");
+    if (!el || !needle || !isPhone() || prefersReducedMotion()) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+        needle.classList.add("go");
+      },
+      { threshold: 0.8 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   return (
     <svg ref={root} viewBox="0 0 100 100" width="76" height="76" aria-hidden className={className}>
       <circle cx={CX} cy={50} r="46" fill="#fff" stroke="rgba(6,34,47,0.1)" strokeWidth="2" />
@@ -41,7 +59,7 @@ export function PressureGauge({ className }: { className?: string }) {
       {ticks.map((t) => (
         <path key={t} d={`M${at(t, 27)} L${at(t, 31)}`} stroke="rgba(6,34,47,0.35)" strokeWidth="2" strokeLinecap="round" />
       ))}
-      <g data-needle transform={`rotate(${REST} ${CX} ${CY})`}>
+      <g data-needle className="gauge-needle" transform={`rotate(${REST} ${CX} ${CY})`}>
         <path d={`M${CX - 2.4} ${CY} L${CX} ${CY - 33} L${CX + 2.4} ${CY} Z`} fill="#06222f" />
       </g>
       <circle cx={CX} cy={CY} r="5.5" fill="#06222f" />

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { PageShell } from "@/components/layout/PageShell";
 import { PageHero } from "@/components/sections/PageHero";
 import { EtaMap } from "@/components/sections/EtaMap";
@@ -8,7 +8,7 @@ import { FinalCta } from "@/components/sections/FinalCta";
 import { ArrowUpRight } from "@/components/ui/Icons";
 import { Reveal, SplitReveal } from "@/components/ui/Reveal";
 import { JsonLd } from "@/components/ui/JsonLd";
-import { cities } from "@/content/cities";
+import { cities, cityLinks } from "@/content/cities";
 import { buildMetadata } from "@/lib/seo";
 import { graph, itemListSchema, webPageSchema } from "@/lib/schema";
 
@@ -39,7 +39,7 @@ export default function ServiceAreasPage() {
         imageAlt="Aerial view of highways and neighborhoods in Frisco, Texas"
         crumbs={[{ name: "Service areas", path: "/service-areas" }]}
       />
-      <EtaMap />
+      <EtaMap cities={cityLinks} />
       <section className="section-y bg-porcelain" aria-labelledby="cities-heading">
         <div className="container-x">
           <SplitReveal as="h2" id="cities-heading" className="t-2 font-display font-semibold">

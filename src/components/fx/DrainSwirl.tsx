@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { gsap, ScrollTrigger, prefersReducedMotion } from "@/lib/gsap";
+import { useRef } from "react";
+import { gsap, ScrollTrigger, useGSAP, prefersReducedMotion } from "@/lib/gsap";
 
 /**
  * A sink drain: a pool of water spirals down it and the drain runs clear. It plays when the
@@ -10,7 +10,7 @@ import { gsap, ScrollTrigger, prefersReducedMotion } from "@/lib/gsap";
 export function DrainSwirl({ className }: { className?: string }) {
   const root = useRef<SVGSVGElement>(null);
 
-  useEffect(() => {
+  useGSAP(() => {
     const el = root.current;
     const water = el?.querySelector("[data-water]");
     if (!el || !water || prefersReducedMotion()) return;
@@ -32,7 +32,7 @@ export function DrainSwirl({ className }: { className?: string }) {
       tween?.kill();
       section?.removeEventListener("click", onClick);
     };
-  }, []);
+  });
 
   return (
     <svg ref={root} viewBox="0 0 72 72" width="64" height="64" aria-hidden className={className}>

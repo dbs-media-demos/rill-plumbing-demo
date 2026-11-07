@@ -3,11 +3,11 @@
 import { useState } from "react";
 import clsx from "clsx";
 import { reviews } from "@/content/reviews";
-import { services } from "@/content/services";
+import type { ServiceLink } from "@/content/services";
 import { ReviewCard } from "./ReviewsWall";
 
 /** Filter reviews by service. */
-export function ReviewsBrowser() {
+export function ReviewsBrowser({ services }: { services: ServiceLink[] }) {
   const used = services.filter((s) => reviews.some((r) => r.service === s.slug));
   const [f, setF] = useState<string>("all");
   const list = reviews.filter((r) => f === "all" || r.service === f);

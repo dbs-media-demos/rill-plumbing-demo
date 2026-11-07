@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { ArrowRight, Phone } from "@/components/ui/Icons";
 import { SplitReveal } from "@/components/ui/Reveal";
 import { JsonLd } from "@/components/ui/JsonLd";
-import { services } from "@/content/services";
+import { services, serviceLinks } from "@/content/services";
 import { buildMetadata } from "@/lib/seo";
 import { graph, itemListSchema, webPageSchema } from "@/lib/schema";
 import { telHref } from "@/lib/site";
@@ -62,7 +62,7 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      <ProblemPicker initial="clog" />
+      <ProblemPicker services={serviceLinks} initial="clog" />
       <FinalCta />
     </PageShell>
   );

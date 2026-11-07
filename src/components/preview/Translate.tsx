@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect } from "react";
+import { PHONE_MEDIA } from "@/lib/phone";
 
 const ATTRS = ["alt", "title", "aria-label", "placeholder"];
 const norm = (s: string) => s.replace(/\s+/g, " ").trim();
@@ -60,8 +61,12 @@ export function Translate({ dict }: { dict: Record<string, string> }) {
   return null;
 }
 
-/** Hide the page until the first translation pass; show it anyway after 2.5 s if JS fails. */
-export const translateGateCss = "html:not(.tr-ready) body{opacity:0;animation:tr-reveal 0s 2.5s forwards}@keyframes tr-reveal{to{opacity:1}}";
+/**
+ * Hide the page until the first translation pass; show it anyway after 2.5 s if JS fails.
+ * Phones keep the first screen visible: the hero, header and bottom bar are already in the right
+ * language from the server, so only what's below them waits.
+ */
+export const translateGateCss = `html:not(.tr-ready) body{opacity:0;animation:tr-reveal 0s 2.5s forwards}@keyframes tr-reveal{to{opacity:1}}@media ${PHONE_MEDIA}{html:not(.tr-ready) body{opacity:1;animation:none}html:not(.tr-ready) :is(main section:not([data-hero]),footer){opacity:0;animation:tr-reveal 0s 2.5s forwards}}`;
 
 /**
  * Dev helper: every visible English fragment on the page that the dictionary doesn't cover yet.

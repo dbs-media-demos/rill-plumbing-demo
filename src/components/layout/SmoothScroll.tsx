@@ -3,7 +3,8 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import type Lenis from "lenis";
-import { gsap, ScrollTrigger, prefersReducedMotion, isTouch } from "@/lib/gsap";
+import { gsap, ScrollTrigger, loadGsap, whenGsap, prefersReducedMotion, isTouch } from "@/lib/gsap";
+import { isPhone } from "@/lib/phone";
 
 declare global {
   interface Window {
@@ -17,11 +18,11 @@ export function SmoothScroll() {
 
   useEffect(() => {
     // Phones keep native scrolling and never download Lenis.
-    if (prefersReducedMotion() || isTouch()) return;
+    if (prefersReducedMotion() || isTouch() || isPhone()) return;
     let lenis: Lenis | null = null;
     let cancelled = false;
     const tick = (time: number) => lenis?.raf(time * 1000);
-    import("lenis").then(({ default: L }) => {
+    Promise.all([import("lenis"), loadGsap()]).then(([{ default: L }]) => {
       if (cancelled) return;
       lenis = new L({ lerp: 0.11, wheelMultiplier: 1, anchors: { offset: -90 } });
       window.__lenis = lenis;
@@ -31,7 +32,7 @@ export function SmoothScroll() {
     });
     return () => {
       cancelled = true;
-      gsap.ticker.remove(tick);
+      gsap?.ticker.remove(tick);
       lenis?.destroy();
       delete window.__lenis;
     };
@@ -39,7 +40,7 @@ export function SmoothScroll() {
 
   useEffect(() => {
     window.__lenis?.resize();
-    const id = window.setTimeout(() => ScrollTrigger.refresh(), 400);
+    const id = window.setTimeout(() => whenGsap(() => ScrollTrigger.refresh()), 400);
     return () => window.clearTimeout(id);
   }, [pathname]);
 

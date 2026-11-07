@@ -1,15 +1,13 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import clsx from "clsx";
-import { cities, zipToCity, type City } from "@/content/cities";
+import type { CityLink } from "@/content/cities";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight } from "@/components/ui/Icons";
 import { SplitReveal } from "@/components/ui/Reveal";
-import { MotionPathPlugin } from "gsap/MotionPathPlugin";
-import { gsap, useGSAP, prefersReducedMotion } from "@/lib/gsap";
-
-if (typeof window !== "undefined") gsap.registerPlugin(MotionPathPlugin);
+import { gsap, useGSAP, loadMotionPath, prefersReducedMotion } from "@/lib/gsap";
+import { isPhone } from "@/lib/phone";
 
 /* Stylised North Dallas map (viewBox 0 0 1000 1000). Not to scale. */
 const roads = [
@@ -35,9 +33,9 @@ const vans: Van[] = [
   { id: "V5", driver: "Jess K.", road: "i635", from: 0.2, to: 0.6, dur: 20 },
 ];
 
-type Result = { city: City; van: Van; eta: number };
+type Result = { city: CityLink; van: Van; eta: number };
 
-export function EtaMap() {
+export function EtaMap({ cities }: { cities: CityLink[] }) {
   const root = useRef<HTMLElement>(null);
   const svg = useRef<SVGSVGElement>(null);
   const tweens = useRef<Record<string, gsap.core.Tween>>({});
@@ -82,12 +80,25 @@ export function EtaMap() {
         });
       }
     },
-    { scope: root },
+    { scope: root, before: loadMotionPath },
   );
 
-  function dispatch(city: City) {
+  // Phones: the vans wait on their roads (no GSAP until someone asks for one).
+  useEffect(() => {
+    if (!isPhone()) return;
+    vans.forEach((v, i) => {
+      const el = svg.current?.querySelector<SVGGElement>(`[data-van="${v.id}"]`);
+      const path = svg.current?.querySelector<SVGGeometryElement>(`[data-road="${v.road}"]`);
+      if (!el || !path) return;
+      const p = path.getPointAtLength((v.from + ((v.to - v.from) * i) / vans.length) * path.getTotalLength());
+      el.setAttribute("transform", `translate(${p.x - 14} ${p.y - 14})`);
+    });
+  }, []);
+
+  async function dispatch(city: CityLink) {
     const map = svg.current;
     if (!map || busy) return;
+    if (isPhone()) await loadMotionPath();
     // Resume any van that was sent out before.
     Object.values(tweens.current).forEach((t) => t.resume());
 
@@ -164,7 +175,7 @@ export function EtaMap() {
       setZipError("Enter a 5-digit ZIP code.");
       return;
     }
-    const c = zipToCity(clean);
+    const c = cities.find((x) => x.zips.includes(clean));
     if (!c) {
       setZipError("That ZIP is just outside our map. Call us, we may still cover it.");
       return;
@@ -181,20 +192,21 @@ export function EtaMap() {
       aria-labelledby="eta-heading"
       className="on-dark section-y relative overflow-hidden bg-abyss text-white"
     >
-      <div aria-hidden className="pointer-events-none absolute -right-40 -top-40 size-[40rem] rounded-full bg-river/25 blur-[120px]" />
-      <div className="container-x relative grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
-        <div className="order-2 lg:order-1">
-          <p className="eyebrow flex items-center gap-2 text-spray">
+      <div aria-hidden className="pointer-events-none absolute -right-40 -top-40 size-[40rem] rounded-full bg-river/25 blur-[120px] phone:hidden" />
+      {/* Phones lay the pieces out in order: the question, the choice, the map, the answer */}
+      <div className="container-x relative grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16 phone:grid-cols-[minmax(0,1fr)] phone:gap-0">
+        <div className="order-2 lg:order-1 phone:contents">
+          <p className="eyebrow flex items-center gap-2 text-spray phone:order-1">
             <span className="pulse-dot" style={{ ["--dot" as string]: "#3ddc97" }} /> 5 vans on the road
           </p>
-          <SplitReveal as="h2" id="eta-heading" className="t-1 mt-4 font-display font-semibold">
+          <SplitReveal as="h2" id="eta-heading" className="t-1 mt-4 font-display font-semibold phone:order-2 phone:mt-2">
             How fast can we <span className="accent font-normal text-spray">get there?</span>
           </SplitReveal>
-          <p className="mt-5 max-w-md text-lg text-white/75">
+          <p className="mt-5 max-w-md text-lg text-white/75 phone:order-3 phone:mt-3 phone:text-[0.98rem]">
             Pick your city or enter your ZIP. We&apos;ll send the nearest van on the map and show you the arrival estimate.
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-2" role="group" aria-label="Choose your city">
+          <div className="mt-8 flex flex-wrap gap-2 rail phone:order-4 phone:mt-4 phone:!gap-2 phone:!flex-nowrap" role="group" aria-label="Choose your city">
             {cities.map((c) => (
               <button
                 key={c.slug}
@@ -202,7 +214,7 @@ export function EtaMap() {
                 onClick={() => dispatch(c)}
                 aria-pressed={result?.city.slug === c.slug}
                 className={clsx(
-                  "min-h-11 rounded-full px-4 text-[0.95rem] font-semibold transition-colors",
+                  "min-h-11 rounded-full px-4 text-[0.95rem] font-semibold transition-colors phone:whitespace-nowrap",
                   result?.city.slug === c.slug ? "bg-spray text-abyss" : "bg-white/8 text-white ring-1 ring-white/15 hover:bg-white/15",
                 )}
               >
@@ -211,7 +223,7 @@ export function EtaMap() {
             ))}
           </div>
 
-          <form onSubmit={onZip} className="mt-4 flex max-w-sm gap-2" noValidate>
+          <form onSubmit={onZip} className="mt-4 flex max-w-sm gap-2 phone:order-5 phone:mt-2.5" noValidate>
             <label htmlFor="eta-zip" className="sr-only">
               ZIP code
             </label>
@@ -231,21 +243,21 @@ export function EtaMap() {
             </button>
           </form>
           {zipError && (
-            <p id="eta-zip-error" className="mt-2 text-sm text-[#ffb4b4]">
+            <p id="eta-zip-error" className="mt-2 text-sm text-[#ffb4b4] phone:order-6">
               {zipError}
             </p>
           )}
 
-          <div aria-live="polite" className="mt-8 min-h-[9.5rem] rounded-[1.6rem] bg-white/6 p-6 ring-1 ring-white/10">
+          <div aria-live="polite" className="mt-8 min-h-[9.5rem] rounded-[1.6rem] bg-white/6 p-6 ring-1 ring-white/10 phone:order-8 phone:mt-3 phone:min-h-[6.5rem] phone:rounded-[1.3rem] phone:!p-4">
             {result ? (
-              <div className="flex flex-wrap items-end justify-between gap-6">
+              <div className="flex flex-wrap items-end justify-between gap-6 phone:gap-3">
                 <div>
                   <p className="text-sm text-white/70">
                     {result.van.id} · {result.van.driver} → {result.city.name}
                   </p>
                   <p className="mt-1 font-display font-semibold leading-none tracking-tight">
                     <span className="text-lg text-white/80">~</span>
-                    <span data-eta className="text-7xl">
+                    <span data-eta className="text-7xl phone:text-5xl">
                       {result.eta}
                     </span>
                     <span className="ml-1 text-2xl text-white/80">min</span>
@@ -257,17 +269,17 @@ export function EtaMap() {
               </div>
             ) : (
               <p className="text-white/70">
-                <span className="block font-display text-2xl font-semibold text-white">Average emergency arrival: 47 min.</span>
+                <span className="block font-display text-2xl font-semibold text-white phone:text-[1.25rem] phone:leading-tight">Average emergency arrival: 47 min.</span>
                 Choose a city to see the nearest van.
               </p>
             )}
           </div>
-          <p className="mt-4 text-xs text-white/65">Illustrative: vans and arrival times are simulated for this concept site.</p>
+          <p className="mt-4 text-xs text-white/65 phone:order-9 phone:mt-2.5">Illustrative: vans and arrival times are simulated for this concept site.</p>
         </div>
 
-        <div className="order-1 lg:order-2">
-          <div className="relative overflow-hidden rounded-[2rem] bg-[#082a39] ring-1 ring-white/10">
-            <svg ref={svg} viewBox="0 60 1000 880" className="block h-auto w-full" role="img" aria-label="Illustrative service map of North Dallas, Plano, Frisco, Allen, Richardson and Carrollton with vans on major roads">
+        <div className="order-1 lg:order-2 phone:order-7 phone:mt-3">
+          <div className="relative overflow-hidden rounded-[2rem] bg-[#082a39] ring-1 ring-white/10 phone:rounded-[1.3rem]">
+            <svg ref={svg} viewBox="0 60 1000 880" preserveAspectRatio="xMidYMid slice" className="block h-auto w-full max-sm:!h-[15rem]" role="img" aria-label="Illustrative service map of North Dallas, Plano, Frisco, Allen, Richardson and Carrollton with vans on major roads">
               <defs>
                 <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
                   <path d="M40 0H0V40" fill="none" stroke="rgba(205,239,245,0.05)" strokeWidth="1" />
@@ -334,7 +346,7 @@ export function EtaMap() {
                 </g>
               ))}
             </svg>
-            <div className="pointer-events-none absolute bottom-4 left-4 flex items-center gap-4 rounded-full bg-abyss/70 px-4 py-2 text-xs text-white/80 backdrop-blur">
+            <div className="pointer-events-none absolute bottom-4 left-4 flex items-center gap-4 rounded-full bg-abyss/70 px-4 py-2 text-xs text-white/80 backdrop-blur phone:static phone:justify-center phone:gap-3 phone:rounded-none phone:bg-transparent phone:px-3 phone:pb-2.5 phone:pt-0 phone:backdrop-blur-none">
               <span className="flex items-center gap-1.5">
                 <span className="inline-block h-3 w-4 rounded-[3px] bg-bonnet" /> Rill van
               </span>

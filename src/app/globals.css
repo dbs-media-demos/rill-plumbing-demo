@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Phones: under 768 px, or a touch screen under 1024 px. Same query as lib/phone.ts, change both together. */
+@custom-variant phone {
+  @media (max-width: 47.98rem), (hover: none) and (pointer: coarse) and (max-width: 63.98rem) {
+    @slot;
+  }
+}
+
 /* ───────────────────────────── tokens ───────────────────────────── */
 
 @theme {
@@ -20,7 +27,7 @@
   --color-sunny: #ffcb47;
   --color-alert: #e5484d;
 
-  --font-display: var(--font-bricolage-ext), var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
 
@@ -99,6 +106,14 @@ html.lenis body {
   font-weight: 400;
   letter-spacing: -0.02em;
   font-variation-settings: "SOFT" 100, "WONK" 1;
+  /* Phones load two font files: accent words stay in colour, in the display face. */
+  @media (max-width: 47.98rem), (hover: none) and (pointer: coarse) and (max-width: 63.98rem) {
+    font-family: var(--font-display);
+    font-style: normal;
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    font-variation-settings: normal;
+  }
 }
 
 @utility eyebrow {
@@ -128,6 +143,9 @@ html.lenis body {
 
 @utility section-y {
   padding-block: 5.5rem;
+  @media (max-width: 47.98rem), (hover: none) and (pointer: coarse) and (max-width: 63.98rem) {
+    padding-block: 2rem;
+  }
   @media (width >= 64rem) {
     padding-block: 8.5rem;
   }
@@ -649,6 +667,147 @@ input[type="range"].range::-moz-range-thumb {
 ::view-transition-group(.morph) {
   animation-duration: 700ms;
   animation-timing-function: var(--ease-out-expo);
+}
+
+/* ───────────────────────────── phones ───────────────────────────── */
+
+@layer base {
+  :where(a, button) {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@media (max-width: 47.98rem), (hover: none) and (pointer: coarse) and (max-width: 63.98rem) {
+  body {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  .t-display {
+    font-size: clamp(2.2rem, 11vw, 3.25rem);
+    line-height: 1;
+    text-wrap: balance;
+  }
+  .t-1 {
+    font-size: clamp(2rem, 9.2vw, 3rem);
+    line-height: 1;
+  }
+  .t-2 {
+    font-size: clamp(1.85rem, 8.4vw, 2.75rem);
+    line-height: 1;
+  }
+  .t-3 {
+    font-size: 1.3rem;
+    line-height: 1.08;
+  }
+
+  /* The homepage is one column of sections on phones; `phone:order-*` sets the order (see HomeContent). */
+  .home-flow {
+    display: flex;
+    flex-direction: column;
+  }
+  .pipeline {
+    display: contents;
+  }
+
+  /* Nothing at the top of a page fades in, and only the short list in the brief keeps moving. */
+  .anim-heading,
+  .anim-fade,
+  .anim-line > span,
+  .anim-drop,
+  .hero-zoom,
+  .pulse-dot::after,
+  .drain-swirl,
+  .flame-flicker,
+  .wave-slide,
+  .water-text,
+  .marquee-track,
+  .cta-ring {
+    animation: none;
+  }
+  :is(.pi-live, :hover) > svg :is(.pi-drip, .pi-swirl, .pi-spray, .pi-needle, .pi-level, .pi-waft, .pi-wave) {
+    animation-iteration-count: 2;
+  }
+  ::view-transition-old(.page),
+  ::view-transition-new(.page) {
+    animation: none;
+  }
+
+  /* Tap feedback */
+  a:active,
+  button:active {
+    transform: scale(0.975);
+    transition: transform 0.12s var(--ease-out-expo);
+  }
+
+  /* One fade-and-rise per section, once (components/layout/SectionRise) */
+  section.rise > :not(img, picture, [aria-hidden]) {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  section.rise.risen > :not(img, picture, [aria-hidden]) {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.6s var(--ease-out-expo),
+      transform 0.6s var(--ease-out-expo);
+  }
+
+  /* The price gauge: its needle swings past and settles in the green once it is in view */
+  .gauge-needle.go {
+    transform-box: view-box;
+    transform-origin: 50px 54px;
+    animation: needle-settle 1.7s var(--ease-out-expo) both;
+  }
+
+  /* Swipe rails: edge to edge, with the first card clear of the screen edge */
+  .rail {
+    display: flex;
+    gap: 0.75rem;
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+    overflow-x: auto;
+    scroll-padding-inline: 1rem;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+  .rail > * {
+    flex: none;
+    scroll-snap-align: start;
+  }
+}
+@media (hover: none) and (pointer: coarse) and (min-width: 48rem) and (max-width: 63.98rem) {
+  .rail {
+    margin-inline: -2rem;
+    padding-inline: 2rem;
+    scroll-padding-inline: 2rem;
+  }
+}
+@media (min-width: 40rem) and (max-width: 47.98rem) {
+  .rail {
+    margin-inline: -2rem;
+    padding-inline: 2rem;
+    scroll-padding-inline: 2rem;
+  }
+}
+@keyframes needle-settle {
+  0% {
+    transform: rotate(-135deg);
+  }
+  38% {
+    transform: rotate(100deg);
+  }
+  58% {
+    transform: rotate(18deg);
+  }
+  76% {
+    transform: rotate(38deg);
+  }
+  100% {
+    transform: rotate(30deg);
+  }
 }
 
 /* ───────────────────────────── reduced motion ───────────────────────────── */
