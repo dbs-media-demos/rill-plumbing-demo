@@ -14,7 +14,6 @@ import {
   NoToneMapping,
   OrthographicCamera,
   PlaneGeometry,
-  PMREMGenerator,
   Quaternion,
   Scene,
   ShaderMaterial,
@@ -29,6 +28,8 @@ import {
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { gsap, loadGsap } from "@/lib/gsap";
+import { demote3D, onDemoted, perfLog, watchFrames } from "@/lib/three-gate";
+import { assertRealGPU, bakeEnvironment, warm as warmScene } from "./warm";
 
 /*
  * The Pipeline in 3D: the page's pipe as a glass tube with copper elbows and brass clips, water
@@ -38,6 +39,11 @@ import { gsap, loadGsap } from "@/lib/gsap";
  * orthographic camera in CSS pixels, so the 3D pipe lies exactly where the SVG one would. It draws
  * on GSAP's ticker, after Lenis has moved the page, so it never lags the scroll; it stops when no
  * pipe is on screen. Desktop only, behind lib/three-gate (components/fx/Pipeline imports it).
+ *
+ * It warms up while the browser is idle after load (`warm`: shaders compiled, one frame drawn
+ * while the canvas is still invisible), long before the visitor scrolls to it, and only then
+ * fades in over the SVG pipe. Its first 2 s on screen are watched: if this computer can't keep up,
+ * it fades back to the SVG for good (`onFail`) and frees the renderer.
  */
 
 export type PipePiece =
@@ -126,7 +132,7 @@ function shadowStrip(pts: Vector3[], half: number): BufferGeometry {
 }
 
 /** A bright, even room for small metal parts on a pale page. */
-function studio(renderer: WebGLRenderer): Texture {
+async function studio(renderer: WebGLRenderer): Promise<Texture> {
   const room = new Scene();
   room.background = new Color(0.32, 0.36, 0.37);
   const panel = (w: number, h: number, c: [number, number, number], pos: [number, number, number]) => {
@@ -139,9 +145,7 @@ function studio(renderer: WebGLRenderer): Texture {
   panel(2, 8, [1.6, 1.9, 2.0], [6, 0, 3]);
   panel(16, 16, [0.08, 0.12, 0.13], [0, -7, 0]);
   panel(10, 10, [0.42, 0.45, 0.46], [0, 0, 8]);
-  const pmrem = new PMREMGenerator(renderer);
-  const env = pmrem.fromScene(room, 0.04).texture;
-  pmrem.dispose();
+  const env = await bakeEnvironment(renderer, room, 0.04);
   room.traverse((o) => {
     if (o instanceof Mesh) {
       o.geometry.dispose();
@@ -226,7 +230,13 @@ void main() {
 
 type Entry = { wrap: HTMLElement; group: Group; fill: { value: number }; visible: boolean; io: IntersectionObserver };
 
-type Layer = { attach: (wrap: HTMLElement) => PipeHandle };
+type Layer = {
+  attach: (wrap: HTMLElement) => PipeHandle;
+  /** Compile everything attached so far, draw it once unseen, then fade the canvas in. */
+  warm: () => Promise<void>;
+  /** Called once if the layer gives up (too slow): show the SVG pipe again. */
+  onFail: (cb: () => void) => void;
+};
 
 let layer: Promise<Layer> | null = null;
 
@@ -236,17 +246,31 @@ async function createLayer(): Promise<Layer> {
   await loadGsap();
   const canvas = document.createElement("canvas");
   canvas.setAttribute("aria-hidden", "true");
-  canvas.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:20;";
+  canvas.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:20;opacity:0;transition:opacity .5s;";
   document.body.appendChild(canvas);
 
-  const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: true });
+  let renderer: WebGLRenderer;
+  try {
+    renderer = new WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: true,
+      premultipliedAlpha: true,
+      powerPreference: "high-performance",
+      failIfMajorPerformanceCaveat: true,
+    });
+    assertRealGPU(renderer);
+  } catch (e) {
+    canvas.remove();
+    throw e;
+  }
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = NoToneMapping;
   const scene = new Scene();
   const camera = new OrthographicCamera(0, 1, 0, -1, -200, 200);
   camera.position.z = 100;
-  const env = studio(renderer);
+  const env = await studio(renderer);
   scene.environment = env;
   const sun = new DirectionalLight(0xffffff, 1.4);
   sun.position.set(-0.5, 0.6, 1);
@@ -261,13 +285,24 @@ async function createLayer(): Promise<Layer> {
 
   const entries: Entry[] = [];
   let running = false;
+  let live = false; // warmed up and showing
+  let dead = false; // gave up: the SVG is back
+  const failCbs: (() => void)[] = [];
+  const watch = watchFrames({
+    pass: () => perfLog("pipeline: smooth, kept live"),
+    fail: (why) => {
+      perfLog(`pipeline: ${why}`);
+      demote3D(); // gives up below, along with every other live scene
+    },
+  });
+  const offDemoted = onDemoted(() => giveUp());
   let w = 0;
   let h = 0;
 
   const size = () => {
     w = window.innerWidth;
     h = window.innerHeight;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.setSize(w, h, false);
     camera.left = 0;
     camera.right = w;
@@ -280,6 +315,7 @@ async function createLayer(): Promise<Layer> {
 
   const frame = (t: number) => {
     time.value = t;
+    if (live) watch.frame(performance.now());
     let any = false;
     for (const e of entries) {
       e.group.visible = e.visible;
@@ -292,7 +328,7 @@ async function createLayer(): Promise<Layer> {
     if (!any) stop();
   };
   const start = () => {
-    if (running) return;
+    if (running || dead || document.hidden) return;
     running = true;
     gsap.ticker.add(frame);
   };
@@ -300,6 +336,34 @@ async function createLayer(): Promise<Layer> {
     if (!running) return;
     running = false;
     gsap.ticker.remove(frame);
+    watch.pause();
+  }
+  const onVis = () => {
+    if (document.hidden) stop();
+    else if (entries.some((e) => e.visible)) start();
+  };
+  document.addEventListener("visibilitychange", onVis);
+
+  function giveUp() {
+    if (dead) return;
+    dead = true;
+    perfLog("pipeline: back to the SVG");
+    offDemoted();
+    stop();
+    canvas.style.opacity = "0";
+    failCbs.splice(0).forEach((f) => f());
+    window.setTimeout(() => {
+      window.removeEventListener("resize", size);
+      document.removeEventListener("visibilitychange", onVis);
+      scene.traverse((o) => {
+        if (o instanceof Mesh) o.geometry.dispose();
+      });
+      [copper, brass, solder, glass, shadow].forEach((m) => m.dispose());
+      env.dispose();
+      renderer.dispose();
+      renderer.forceContextLoss();
+      canvas.remove();
+    }, 600);
   }
 
   const build = (e: Entry, pieces: PipePiece[]) => {
@@ -401,6 +465,22 @@ async function createLayer(): Promise<Layer> {
     new ShaderMaterial({ vertexShader: waterVert, fragmentShader: waterFrag, uniforms: { uFill: fill, uTime: time } });
 
   return {
+    async warm() {
+      if (dead) return;
+      const t0 = performance.now();
+      await warmScene(renderer, scene, camera, "pipeline");
+      renderer.clear();
+      if (dead) return;
+      if (!live) {
+        live = true;
+        canvas.style.opacity = "1";
+        perfLog(`pipeline: compiled in ${Math.round(performance.now() - t0)} ms, showing (${Math.round(performance.now())} ms after navigation)`);
+      }
+    },
+    onFail(cb) {
+      if (dead) cb();
+      else failCbs.push(cb);
+    },
     attach(wrap) {
       const e: Entry = {
         wrap,
@@ -435,7 +515,7 @@ async function createLayer(): Promise<Layer> {
           entries.splice(entries.indexOf(e), 1);
           if (!entries.length) {
             stop();
-            renderer.clear();
+            if (!dead) renderer.clear();
           }
         },
       };

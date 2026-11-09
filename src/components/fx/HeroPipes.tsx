@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
-import { after3DGate } from "@/lib/three-gate";
+import { after3DGate, demote3D, onDemoted, perfLog, watchFrames } from "@/lib/three-gate";
 import { isPhone } from "@/lib/phone";
 import type { HeroPipes as Scene } from "./pipes3d/heroScene";
 
@@ -13,6 +13,10 @@ type Still = { src: string; srcSet?: string; sizes?: string };
  * same scene. Desktop only: after load, on a big screen with a mouse, no reduced motion or
  * Save-Data, three.js is fetched inside lib/three-gate's callback; everyone else keeps the still.
  * Click the valve to shut the water off; the cursor leans the camera; the scroll follows the water.
+ *
+ * It never stutters: the still stays until the scene is built and its shaders compiled; then the
+ * first 2 s of frames are watched, and on a computer that can't keep up the canvas fades back to
+ * the still, the renderer is freed, and the rest of the visit stays on stills (lib/three-gate).
  *
  * Phones: zero bytes of three.js. The plumber photo is the first paint; once the page has loaded,
  * it crossfades once to the phone still of the same pipework (or not at all if that takes > 4 s).
@@ -35,19 +39,57 @@ export function HeroPipes({ phoneStill, labels }: { phoneStill: Still; labels: {
     const off: (() => void)[] = [];
 
     const cancel = after3DGate(async () => {
+      const t0 = performance.now();
+      let settle = () => {};
+      const settled = new Promise<void>((r) => (settle = r));
+      // This scene, or one further down, couldn't keep up: fade back to the still and free the GPU.
+      let retired = false;
+      const retire = () => {
+        if (retired) return;
+        retired = true;
+        perfLog("hero: back to the still");
+        setLive(false);
+        delete section.dataset.live;
+        const s = scene;
+        s?.setVisible(false);
+        off.forEach((f) => f());
+        off.length = 0;
+        window.setTimeout(() => {
+          if (scene !== s) return;
+          s?.dispose();
+          scene = null;
+        }, 800);
+        settle();
+      };
+      off.push(onDemoted(retire));
+      const watch = watchFrames({
+        pass: () => {
+          perfLog(`hero: smooth, kept live`);
+          settle();
+        },
+        fail: (why) => {
+          // too slow for this computer: stills for the rest of the visit (retire runs on it)
+          perfLog(`hero: ${why}`);
+          demote3D();
+        },
+      });
       try {
         const { createHeroPipes } = await import("./pipes3d/heroScene");
         if (disposed) return;
-        scene = await createHeroPipes(canvas);
+        scene = await createHeroPipes(canvas, { watch });
       } catch {
-        return; // no WebGL after all: the still stays
+        perfLog("hero: no fast WebGL, still kept");
+        return; // no WebGL, or no proper graphics chip: the still stays
       }
       if (disposed) {
         scene.dispose();
+        scene = null;
         return;
       }
       const s = scene;
+      perfLog(`hero: built and compiled in ${Math.round(performance.now() - t0)} ms`);
       s.onReady(() => {
+        perfLog(`hero: showing ${Math.round(performance.now() - t0)} ms after the gate (${Math.round(performance.now())} ms after navigation)`);
         setLive(true);
         section.dataset.live = "";
       });
@@ -55,8 +97,15 @@ export function HeroPipes({ phoneStill, labels }: { phoneStill: Still; labels: {
 
       const ro = new ResizeObserver(() => s.resize());
       ro.observe(canvas);
-      const io = new IntersectionObserver(([e]) => s.setVisible(e.isIntersecting));
+      // Runs only while the hero is on screen and the tab is showing.
+      let onScreen = true;
+      const show = () => s.setVisible(onScreen && !document.hidden);
+      const io = new IntersectionObserver(([e]) => {
+        onScreen = e.isIntersecting;
+        show();
+      });
       io.observe(section);
+      document.addEventListener("visibilitychange", show);
 
       const onScroll = () => {
         const r = section.getBoundingClientRect();
@@ -105,6 +154,7 @@ export function HeroPipes({ phoneStill, labels }: { phoneStill: Still; labels: {
       off.push(() => {
         ro.disconnect();
         io.disconnect();
+        document.removeEventListener("visibilitychange", show);
         window.removeEventListener("scroll", onScroll);
         section.removeEventListener("pointermove", onMove);
         section.removeEventListener("pointerleave", onLeave);
@@ -114,6 +164,8 @@ export function HeroPipes({ phoneStill, labels }: { phoneStill: Still; labels: {
         delete section.dataset.live;
         delete section.dataset.valve;
       });
+      // the next scene in line warms up once this one is through its frame check
+      await settled;
     });
 
     return () => {

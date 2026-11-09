@@ -17,7 +17,6 @@ import {
   MeshStandardMaterial,
   PerspectiveCamera,
   PlaneGeometry,
-  PMREMGenerator,
   Raycaster,
   RepeatWrapping,
   Scene,
@@ -35,6 +34,7 @@ import {
   type Texture,
 } from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
+import { assertRealGPU, bakeEnvironment, warm } from "./warm";
 
 /*
  * The hero: copper pipework on a dark wall, the way a proud plumber leaves it. A cold line comes
@@ -225,7 +225,7 @@ function dial(): Texture {
  * A room for the metal to reflect: dark teal, one big warm softbox where the key light is (upper
  * left), a cool strip on the right and a faint ceiling. Copper and brass are only what they reflect.
  */
-function studio(renderer: WebGLRenderer): Texture {
+async function studio(renderer: WebGLRenderer): Promise<Texture> {
   const room = new Scene();
   room.background = new Color(0x04161e);
   const panel = (w: number, h: number, rgb: [number, number, number], pos: [number, number, number]) => {
@@ -241,9 +241,7 @@ function studio(renderer: WebGLRenderer): Texture {
   panel(14, 14, [0.03, 0.1, 0.12], [0, -6, 0]); // floor, deep teal
   panel(14, 10, [0.05, 0.16, 0.2], [0, 0, -6]); // the wall behind, teal
   panel(14, 10, [0.12, 0.13, 0.13], [0, 0, 9]); // the room in front
-  const pmrem = new PMREMGenerator(renderer);
-  const env = pmrem.fromScene(room, 0.03).texture;
-  pmrem.dispose();
+  const env = await bakeEnvironment(renderer, room, 0.03);
   room.traverse((o) => {
     if (o instanceof Mesh) {
       o.geometry.dispose();
@@ -395,8 +393,23 @@ export type HeroPipes = {
   dispose: () => void;
 };
 
-export async function createHeroPipes(canvas: HTMLCanvasElement, opts: { still?: boolean } = {}): Promise<HeroPipes> {
-  const renderer = new WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance", preserveDrawingBuffer: !!opts.still });
+/** Called from the render loop: each drawn frame, and whenever the loop stops (lib/three-gate's watchFrames). */
+type FrameWatch = { frame: (now: number) => void; pause: () => void };
+
+/**
+ * Resolves once the scene is built and every shader is compiled (one frame drawn, the canvas still
+ * hidden), so its first visible frame never hitches. Throws on software WebGL or a GPU the browser
+ * flags as slow: the still stays.
+ */
+export async function createHeroPipes(canvas: HTMLCanvasElement, opts: { still?: boolean; watch?: FrameWatch } = {}): Promise<HeroPipes> {
+  const renderer = new WebGLRenderer({
+    canvas,
+    antialias: true,
+    powerPreference: "high-performance",
+    failIfMajorPerformanceCaveat: !opts.still,
+    preserveDrawingBuffer: !!opts.still,
+  });
+  if (!opts.still) assertRealGPU(renderer);
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
@@ -410,7 +423,7 @@ export async function createHeroPipes(canvas: HTMLCanvasElement, opts: { still?:
   const camera = new PerspectiveCamera(FOV, FRAME.w / FRAME.h, 1, 60);
 
   await pause();
-  const env = studio(renderer);
+  const env = await studio(renderer);
   scene.environment = env;
   await pause();
   const marks = drawMarks();
@@ -716,7 +729,7 @@ export async function createHeroPipes(canvas: HTMLCanvasElement, opts: { still?:
     const h = canvas.clientHeight || FRAME.h;
     W.w = w;
     W.h = h;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, opts.still ? 1 : 1.6));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, opts.still ? 1 : 1.5));
     renderer.setSize(w, h, false);
     kick();
   };
@@ -787,6 +800,19 @@ export async function createHeroPipes(canvas: HTMLCanvasElement, opts: { still?:
     }
   };
 
+  // Render on demand: while the water runs there's always something moving; once it's shut off and
+  // everything has come to rest, the loop sleeps until the pointer, the scroll or a click wakes it.
+  const moving = () =>
+    open ||
+    leverT < 1 ||
+    flowT < 0.9 + drops.length * 0.85 + 1.4 ||
+    psi > 0.05 ||
+    (glintT >= 0 && glintT < 3) ||
+    Math.abs(ptr.tx - ptr.x) > 1e-3 ||
+    Math.abs(ptr.ty - ptr.y) > 1e-3 ||
+    Math.abs(scrollT - scrollP) > 1e-4 ||
+    Math.abs(hoverTarget - hover) > 1e-3;
+
   const loop = (now: number) => {
     raf = 0;
     const dt = Math.min(0.05, (now - last) / 1000);
@@ -795,10 +821,13 @@ export async function createHeroPipes(canvas: HTMLCanvasElement, opts: { still?:
     flow.time.value = clock;
     apply(dt);
     draw();
-    if (visible) raf = requestAnimationFrame(loop);
+    opts.watch?.frame(now);
+    if (visible && moving()) raf = requestAnimationFrame(loop);
+    else opts.watch?.pause();
   };
+  let warmed = false;
   function kick() {
-    if (!raf && visible && !opts.still) {
+    if (!raf && visible && warmed && !opts.still) {
       last = performance.now();
       raf = requestAnimationFrame(loop);
     }
@@ -809,14 +838,23 @@ export async function createHeroPipes(canvas: HTMLCanvasElement, opts: { still?:
 
   renderer.shadowMap.needsUpdate = true;
   resize();
+  if (!opts.still) {
+    await pause();
+    frameCamera("desktop");
+    await warm(renderer, scene, camera, "hero");
+    warmed = true;
+    kick();
+  }
 
   return {
     pointer(x, y) {
       ptr.tx = x;
       ptr.ty = y;
+      kick();
     },
     scroll(p) {
       scrollT = p;
+      kick();
     },
     hitValve(x, y) {
       ndc.set((x / W.w) * 2 - 1, -(y / W.h) * 2 + 1);
@@ -838,14 +876,16 @@ export async function createHeroPipes(canvas: HTMLCanvasElement, opts: { still?:
     },
     setHover(on) {
       hoverTarget = on ? 1 : 0;
+      kick();
     },
     resize,
     setVisible(v) {
       visible = v;
       if (v) kick();
-      else if (raf) {
-        cancelAnimationFrame(raf);
+      else {
+        if (raf) cancelAnimationFrame(raf);
         raf = 0;
+        opts.watch?.pause();
       }
     },
     onReady(cb) {
@@ -873,6 +913,7 @@ export async function createHeroPipes(canvas: HTMLCanvasElement, opts: { still?:
       marks.dispose();
       wallTex.dispose();
       renderer.dispose();
+      if (!opts.still) renderer.forceContextLoss();
     },
   };
 }

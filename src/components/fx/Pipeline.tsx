@@ -14,7 +14,9 @@ import type { PipeHandle, PipePiece } from "./pipes3d/pipeline";
  *
  * On a desktop that passes lib/three-gate the SVG steps aside for the same path in real 3D
  * (pipes3d/pipeline): a glass tube with copper elbows, the water visibly flowing inside it, and its
- * shadow on the page. The SVG stays for everyone else.
+ * shadow on the page. The SVG stays for everyone else, and it's the fallback: the 3D warms up
+ * after the hero (while the browser is idle, long before you scroll here), crossfades in over the
+ * SVG once its shaders are compiled, and fades back to it if this computer can't keep it smooth.
  */
 
 const CROSS_SPAN = 140; // scroll distance (px) over which water crosses a seam
@@ -173,24 +175,46 @@ export function Pipeline({ children }: { children: ReactNode }) {
     whenGsap(() => ScrollTrigger.addEventListener("refresh", measure));
     window.addEventListener("scroll", onScroll, { passive: true });
     const late = window.setTimeout(measure, 1200);
-    const cancel3d = after3DGate(async () => {
-      try {
-        const { pipeLayer } = await import("./pipes3d/pipeline");
-        const layer = await pipeLayer();
-        if (disposed) return;
-        pipe3d = layer.attach(el);
-      } catch {
-        return; // no WebGL: the SVG stays
-      }
-      s.style.visibility = "hidden";
-      if (geo) pipe3d.setPath(geo.pieces);
-      render();
-    });
+    const showSvg = () => {
+      s.style.opacity = "";
+      window.clearTimeout(hideSvg);
+      s.style.visibility = "";
+    };
+    let hideSvg = 0;
+    const cancel3d = after3DGate(
+      async () => {
+        try {
+          const { pipeLayer } = await import("./pipes3d/pipeline");
+          const layer = await pipeLayer();
+          if (disposed) return;
+          pipe3d = layer.attach(el);
+          if (geo) pipe3d.setPath(geo.pieces);
+          render();
+          await layer.warm();
+          if (disposed) return;
+          layer.onFail(() => {
+            pipe3d?.dispose();
+            pipe3d = null;
+            showSvg();
+          });
+          if (!pipe3d) return; // gave up already
+        } catch {
+          return; // no fast WebGL: the SVG stays
+        }
+        // the 3D canvas fades in over 0.5 s; the SVG steps aside under it
+        s.style.transition = "opacity .5s";
+        s.style.opacity = "0";
+        hideSvg = window.setTimeout(() => (s.style.visibility = "hidden"), 500);
+      },
+      undefined,
+      1,
+    );
     return () => {
       disposed = true;
       cancel3d();
       pipe3d?.dispose();
-      s.style.visibility = "";
+      showSvg();
+      s.style.transition = "";
       ro.disconnect();
       ScrollTrigger?.removeEventListener("refresh", measure);
       window.removeEventListener("scroll", onScroll);
