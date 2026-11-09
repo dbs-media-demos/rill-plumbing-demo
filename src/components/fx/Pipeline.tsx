@@ -3,12 +3,18 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { ScrollTrigger, whenGsap, prefersReducedMotion } from "@/lib/gsap";
 import { isPhone } from "@/lib/phone";
+import { after3DGate } from "@/lib/three-gate";
+import type { PipeHandle, PipePiece } from "./pipes3d/pipeline";
 
 /*
  * The Pipeline: one continuous pipe runs down the page beside the sections in
  * `children` (each marked with [data-pipe]). At every section seam it crosses
  * to the other side of the page. As you scroll, water fills it, with a glowing
  * droplet at the front, and each joint lights up as the water passes.
+ *
+ * On a desktop that passes lib/three-gate the SVG steps aside for the same path in real 3D
+ * (pipes3d/pipeline): a glass tube with copper elbows, the water visibly flowing inside it, and its
+ * shadow on the page. The SVG stays for everyone else.
  */
 
 const CROSS_SPAN = 140; // scroll distance (px) over which water crosses a seam
@@ -19,6 +25,7 @@ type Geometry = {
   total: number;
   map: { y: number; l: number }[];
   joints: { x: number; y: number; l: number }[];
+  pieces: PipePiece[];
 };
 
 function build(width: number, height: number, seams: number[], gutter: number): Geometry {
@@ -30,6 +37,7 @@ function build(width: number, height: number, seams: number[], gutter: number): 
   let d = `M${x} ${y}`;
   const map = [{ y: 0, l: 0 }];
   const joints: Geometry["joints"] = [];
+  const pieces: PipePiece[] = [];
   const arc = (Math.PI * R) / 2;
 
   for (const s of seams) {
@@ -37,16 +45,20 @@ function build(width: number, height: number, seams: number[], gutter: number): 
     const nx = xs[1 - side];
     const dir = nx > x ? 1 : -1;
     // down to the elbow
+    pieces.push({ kind: "line", a: [x, y], b: [x, s - R], l0: l, l1: l + s - R - y });
     l += s - R - y;
     d += ` L${x} ${s - R}`;
     map.push({ y: s - CROSS_SPAN / 2, l });
     d += ` Q${x} ${s} ${x + dir * R} ${s}`;
+    pieces.push({ kind: "elbow", corner: [x, s], din: [0, 1], dout: [dir, 0], r: R });
     l += arc;
     joints.push({ x, y: s, l });
     // across the page
     d += ` L${nx - dir * R} ${s}`;
+    pieces.push({ kind: "line", a: [x + dir * R, s], b: [nx - dir * R, s], l0: l, l1: l + Math.abs(nx - x) - 2 * R });
     l += Math.abs(nx - x) - 2 * R;
     d += ` Q${nx} ${s} ${nx} ${s + R}`;
+    pieces.push({ kind: "elbow", corner: [nx, s], din: [dir, 0], dout: [0, 1], r: R });
     l += arc;
     joints.push({ x: nx, y: s, l });
     map.push({ y: s + CROSS_SPAN / 2, l });
@@ -54,10 +66,11 @@ function build(width: number, height: number, seams: number[], gutter: number): 
     y = s + R;
     side = 1 - side;
   }
+  pieces.push({ kind: "line", a: [x, y], b: [x, height], l0: l, l1: l + height - y });
   l += height - y;
   d += ` L${x} ${height}`;
   map.push({ y: height, l });
-  return { d, total: l, map, joints };
+  return { d, total: l, map, joints, pieces };
 }
 
 function lengthAt(map: Geometry["map"], y: number) {
@@ -86,6 +99,8 @@ export function Pipeline({ children }: { children: ReactNode }) {
     const reduce = prefersReducedMotion();
 
     let geo: Geometry | null = null;
+    let pipe3d: PipeHandle | null = null;
+    let disposed = false;
     let current = 0;
     let target = 0;
     let raf = 0;
@@ -100,6 +115,7 @@ export function Pipeline({ children }: { children: ReactNode }) {
       jointsG.querySelectorAll<SVGCircleElement>("circle").forEach((c) => {
         c.classList.toggle("is-wet", Number(c.dataset.l) <= len);
       });
+      pipe3d?.setFill(len);
     };
 
     const tick = () => {
@@ -132,6 +148,7 @@ export function Pipeline({ children }: { children: ReactNode }) {
       jointsG.innerHTML = geo.joints
         .map((j) => `<circle cx="${j.x}" cy="${j.y}" r="7" data-l="${j.l}"></circle>`)
         .join("");
+      pipe3d?.setPath(geo.pieces);
       update(true);
     };
 
@@ -156,7 +173,24 @@ export function Pipeline({ children }: { children: ReactNode }) {
     whenGsap(() => ScrollTrigger.addEventListener("refresh", measure));
     window.addEventListener("scroll", onScroll, { passive: true });
     const late = window.setTimeout(measure, 1200);
+    const cancel3d = after3DGate(async () => {
+      try {
+        const { pipeLayer } = await import("./pipes3d/pipeline");
+        const layer = await pipeLayer();
+        if (disposed) return;
+        pipe3d = layer.attach(el);
+      } catch {
+        return; // no WebGL: the SVG stays
+      }
+      s.style.visibility = "hidden";
+      if (geo) pipe3d.setPath(geo.pieces);
+      render();
+    });
     return () => {
+      disposed = true;
+      cancel3d();
+      pipe3d?.dispose();
+      s.style.visibility = "";
       ro.disconnect();
       ScrollTrigger?.removeEventListener("refresh", measure);
       window.removeEventListener("scroll", onScroll);

@@ -1,6 +1,5 @@
-import Image, { getImageProps } from "next/image";
-import type { CSSProperties } from "react";
-import { LazyWaterSurface } from "@/components/fx/LazyWaterSurface";
+import { getImageProps } from "next/image";
+import { HeroPipes } from "@/components/fx/HeroPipes";
 import { ConceptNote } from "@/components/layout/ConceptNote";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight, Google, Phone, Shield, Star } from "@/components/ui/Icons";
@@ -8,34 +7,44 @@ import { defaultBiz } from "@/lib/biz";
 import { L, num, telOf, type Biz } from "@/lib/biz-core";
 import { PHONE_MEDIA } from "@/lib/phone";
 
-const d = (s: number) => ({ "--d": `${s}s` }) as CSSProperties;
-
 export function HomeHero({ biz = defaultBiz }: { biz?: Biz }) {
   const sr = biz.lang === "sr";
-  // One <img>, two photos: the water still behind the desktop's WebGL, a plumber at work on phones.
+  const longTitle = sr || (biz.tagline?.length ?? 0) > 22;
+  // One <img>, two pictures: on desktop the still of the 3D pipework (rendered from the live scene by
+  // scripts/render-hero.mjs and cropped the way its camera crops), a plumber at work on phones.
   const { props: still } = getImageProps({
-    src: "/images/hero-water.jpg",
+    src: "/images/hero-pipes.jpg",
     alt: "",
-    fill: true,
+    width: 2400,
+    height: 1500,
     fetchPriority: "high",
     loading: "eager",
     sizes: "100vw",
-    quality: 60,
-    className: "-z-20 object-cover phone:!h-[66%] phone:object-[60%_30%]",
+    quality: 70,
+    className: "absolute inset-0 -z-20 h-full w-full object-cover object-[74%_42%] phone:!h-[66%] phone:object-[60%_30%]",
   });
+  // The same pipework, framed for a phone: crossfades in over the photo once the page has loaded.
+  const { props: pipesPhone } = getImageProps({ src: "/images/hero-pipes-phone.jpg", alt: "", width: 1080, height: 1350, sizes: "100vw", quality: 60 });
   // The landscape photo is cropped to a portrait box, so it renders about 1.6 screens wide: ask for that to keep it sharp.
   const { props: phoneStill } = getImageProps({ src: "/images/plumber-under-sink.jpg", alt: "", fill: true, sizes: "160vw", quality: 60 });
 
   return (
-    <section data-hero data-header="dark" className="on-dark relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-abyss text-white phone:min-h-[min(calc(100svh-8.75rem),46rem)]">
+    <section data-hero data-header="dark" className="group on-dark relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-abyss text-white phone:min-h-[min(calc(100svh-8.75rem),46rem)]">
       <picture>
         <source media={PHONE_MEDIA} srcSet={phoneStill.srcSet} sizes={phoneStill.sizes} />
         <img {...still} alt="" />
       </picture>
-      <LazyWaterSurface src="/tex/hero-water.webp" srcSmall="/tex/hero-water-sm.webp" className="-z-10" />
+      <HeroPipes
+        phoneStill={{ src: pipesPhone.src, srcSet: pipesPhone.srcSet, sizes: pipesPhone.sizes }}
+        labels={
+          sr
+            ? { open: "Zatvori", closed: "Pusti" }
+            : { open: "Shut it", closed: "Open it" }
+        }
+      />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(6,34,47,0.55)_0%,rgba(6,34,47,0)_28%,rgba(6,34,47,0.05)_55%,rgba(6,34,47,0.85)_100%)] phone:hidden"
+        className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(6,34,47,0.55)_0%,rgba(6,34,47,0)_28%,rgba(6,34,47,0.05)_55%,rgba(6,34,47,0.62)_100%)] phone:hidden"
       />
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(90%_70%_at_0%_100%,rgba(6,34,47,0.7),transparent_60%)] phone:hidden" />
       <div
@@ -45,34 +54,27 @@ export function HomeHero({ biz = defaultBiz }: { biz?: Biz }) {
 
       <ConceptNote biz={biz} className="absolute right-3 top-[4.75rem] z-10 hidden rounded-full bg-white/90 px-3 py-1 text-[0.75rem] text-abyss phone:block" />
 
-      <p
-        className="anim-fade pointer-events-none absolute right-5 top-28 hidden items-center gap-2 text-sm text-white/60 lg:flex phone:hidden"
-        style={d(1.6)}
-        aria-hidden
-      >
-        <span className="inline-block size-1.5 rounded-full bg-spray" /> The water&apos;s live. Stir it.
-      </p>
-
-      <div className="container-x relative mt-auto pb-10 pt-36 lg:pb-14 phone:pb-5 phone:pt-40">
-        <div className="grid items-end gap-10 lg:grid-cols-[1fr_auto]">
-          <div>
-            <p className="anim-fade flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.95rem] font-medium text-white/85 phone:hidden" style={d(0.05)}>
+      <div className="container-x relative mt-auto pb-10 pt-36 lg:pb-20 phone:pb-5 phone:pt-40">
+        <div className="grid items-end gap-10">
+          <div className="max-w-[min(62vw,64rem)] phone:max-w-none">
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.95rem] font-medium text-white/85 phone:hidden">
               <span className="pulse-dot" aria-hidden />
               {biz.preview ? `${sr ? "Vodoinstalateri dežurni 24/7" : "Plumbers on call 24/7"} · ${biz.area}` : "Plumbers on call 24/7 · Plano & North Dallas"}
             </p>
             <p className="hidden text-[0.95rem] font-medium text-spray phone:block">{biz.tagline ?? L(biz, "Water where it belongs.", "Voda tamo gde joj je mesto.")}</p>
-            <h1 className="t-display mt-5 font-display font-semibold phone:mt-1.5">
+            {/* Serbian and long CRM taglines run to three lines: a size down keeps the buttons on the first screen */}
+            <h1 className={`t-display mt-5 font-display font-semibold phone:mt-1.5 ${longTitle ? "lg:!text-[clamp(3rem,7.6vw,8.5rem)]" : ""}`}>
               {/* Phones lead with the service and the town */}
               <span className="hidden phone:block">
                 {L(biz, "24/7 plumbers in ", "Vodoinstalater 24/7, ")}
                 <span className="accent font-normal text-spray">{biz.area}.</span>
               </span>
-              <span className="anim-line block overflow-hidden pb-[0.06em] phone:hidden">
-                <span style={d(0.1)}>{biz.tagline ?? "Water where"}</span>
+              <span className="block pb-[0.06em] phone:hidden">
+                <span>{biz.tagline ?? "Water where"}</span>
               </span>
               {!biz.tagline && (
-                <span className="anim-line block overflow-hidden pb-[0.12em] phone:hidden">
-                  <span style={d(0.22)}>
+                <span className="block pb-[0.12em] phone:hidden">
+                  <span>
                     it <span className="accent font-normal text-spray">belongs.</span>
                   </span>
                 </span>
@@ -103,7 +105,7 @@ export function HomeHero({ biz = defaultBiz }: { biz?: Biz }) {
                 </Button>
               )}
             </div>
-            <p className="anim-fade mt-6 max-w-xl text-lg text-white/85 lg:text-xl phone:mt-3.5 phone:text-pretty phone:text-[0.95rem] phone:leading-snug phone:text-white/75" style={d(0.45)}>
+            <p className="mt-6 max-w-xl text-lg text-white/85 lg:text-xl phone:mt-3.5 phone:text-pretty phone:text-[0.95rem] phone:leading-snug phone:text-white/75">
               {sr ? (
                 "Curenja, zapušenja i pokvareni bojleri, rešeni danas. Licencirani majstori koji kažu cenu unapred, nose navlake za cipele i naplaćuju isto u 2 noću kao u 2 popodne."
               ) : (
@@ -113,7 +115,7 @@ export function HomeHero({ biz = defaultBiz }: { biz?: Biz }) {
                 </>
               )}
             </p>
-            <div className="anim-fade mt-8 flex flex-wrap gap-3 phone:hidden" style={d(0.6)}>
+            <div className="mt-8 flex flex-wrap gap-3 phone:hidden">
               <Button href="/book" size="lg" icon={<ArrowRight size={18} />}>
                 Book a plumber
               </Button>
@@ -124,34 +126,9 @@ export function HomeHero({ biz = defaultBiz }: { biz?: Biz }) {
               )}
             </div>
           </div>
-
-          <div className="anim-drop relative hidden w-[clamp(15rem,22vw,20rem)] lg:block" style={d(0.5)}>
-            <div className="mask-drop relative aspect-[100/130] w-full">
-              <Image
-                src="/images/plumber-under-sink.jpg"
-                alt={biz.preview ? "Plumber replacing a supply line under a kitchen sink" : "Rill plumber replacing a supply line under a kitchen sink"}
-                fill
-                sizes="320px"
-                quality={70}
-                className="object-cover"
-              />
-            </div>
-            <div className="absolute -left-10 bottom-10 flex items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 text-abyss shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)]">
-              <span className="relative grid size-9 place-items-center rounded-full bg-foam text-river">
-                <span className="pulse-dot" style={{ ["--dot" as string]: "#3ddc97" }} />
-              </span>
-              <span className="text-sm leading-tight">
-                <strong className="block">{biz.preview ? (sr ? "Vodoinstalater je blizu" : "A plumber is nearby") : "Marcus is nearby"}</strong>
-                <span className="text-slate">{biz.preview ? (sr ? "Stiže brzo" : "On the way fast") : "~38 min to Plano"}</span>
-              </span>
-            </div>
-          </div>
         </div>
 
-        <ul
-          className="anim-fade mt-12 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-white/15 pt-6 text-sm text-white/80 phone:hidden"
-          style={d(0.75)}
-        >
+        <ul className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-white/15 pt-6 text-sm text-white/80 phone:hidden">
           {biz.rating && (
           <li className="flex items-center gap-2">
             <Google size={16} />
@@ -168,6 +145,12 @@ export function HomeHero({ biz = defaultBiz }: { biz?: Biz }) {
           </li>
           <li>No overtime charges, ever</li>
           <li>1-year labor warranty</li>
+          {/* The 3D valve's hint: its space is always there, it shows once the live scene does (HeroPipes) */}
+          <li aria-hidden className="invisible ml-auto flex items-center gap-2 text-white/65 opacity-0 transition-opacity duration-700 group-data-[live]:visible group-data-[live]:opacity-100">
+            <span className="inline-block size-1.5 rounded-full bg-spray group-data-[valve=closed]:bg-alert" />
+            <span className="group-data-[valve=closed]:hidden">{L(biz, "Click the valve to shut the water off", "Kliknite na ventil i zatvorite vodu")}</span>
+            <span className="hidden group-data-[valve=closed]:inline">{L(biz, "Water off. Click it again to open", "Voda je zatvorena. Kliknite ponovo")}</span>
+          </li>
         </ul>
       </div>
     </section>

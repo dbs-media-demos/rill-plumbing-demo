@@ -122,8 +122,8 @@ export function Header({ services }: { services: ServiceLink[] }) {
               dark ? "text-white" : "text-abyss",
               scrolled || mega
                 ? dark
-                  ? "bg-abyss/55 shadow-[0_10px_40px_-20px_rgba(0,0,0,0.6)] backdrop-blur-xl phone:bg-transparent phone:shadow-none phone:backdrop-blur-none"
-                  : "bg-white/80 shadow-[0_10px_40px_-18px_rgba(6,34,47,0.35)] backdrop-blur-xl"
+                  ? "bg-abyss shadow-[0_10px_40px_-20px_rgba(0,0,0,0.6)] phone:bg-transparent phone:shadow-none"
+                  : "bg-white shadow-[0_10px_40px_-18px_rgba(6,34,47,0.35)]"
                 : "bg-transparent",
             )}
           >

@@ -4,7 +4,6 @@ All photos are from Unsplash (Unsplash License: free to use, no attribution requ
 
 | File | Source | Photographer |
 |---|---|---|
-| hero-water.jpg | https://unsplash.com/photos/LCaKuYefLQk | Jorge Vasconez |
 | plumber-under-sink.jpg | https://unsplash.com/photos/c314Gh8dXAo | Timur Shakerzianov |
 | plumber-cabinet.jpg | https://unsplash.com/photos/wzIjLL4KB-4 | Timur Shakerzianov |
 | plumber-hands.jpg | https://unsplash.com/photos/kxuz4YrLxSc | Timur Shakerzianov |
@@ -57,3 +56,9 @@ All photos are from Unsplash (Unsplash License: free to use, no attribution requ
 | team-dana.jpg | https://unsplash.com/photos/NpyF7rjqmq4 | LinkedIn Sales Solutions |
 | team-rosa.jpg | https://unsplash.com/photos/0Zx1bDv5BNY | Christina @ wocintechchat.com |
 | team-andre.jpg | https://unsplash.com/photos/63TPRKUxhmA | Divaris Shirichena |
+
+## Rendered
+
+| File | Source |
+|---|---|
+| hero-pipes.jpg, hero-pipes-phone.jpg | Rendered from the site's own three.js hero scene (`src/components/fx/pipes3d/heroScene.ts`) by `scripts/render-hero.mjs`. Built from primitives, no third-party models or textures. |
