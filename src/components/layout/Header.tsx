@@ -43,14 +43,24 @@ export function Header({ services }: { services: ServiceLink[] }) {
 
   // Which section is under the header decides light/dark text; direction decides hide/show.
   useEffect(() => {
-    let lastY = window.scrollY;
+    // Hidden flips only after a clear 12 px one way since the last turn: Lenis eases a scroll out in
+    // tiny steps (and can step back a pixel), which compared frame to frame flickered the header.
+    let anchor = window.scrollY;
+    let hid = false;
     let raf = 0;
     const detect = () => {
       raf = 0;
       const y = window.scrollY;
       setScrolled(y > 24);
-      setHidden(y > 480 && y > lastY + 2 ? true : y < lastY - 2 ? false : (h) => h);
-      lastY = y;
+      if (y <= 480) {
+        hid = false;
+        anchor = y;
+      } else if (hid ? y > anchor : y < anchor) anchor = y; // still going the way it's set: follow the turning point
+      else if (Math.abs(y - anchor) > 12) {
+        hid = !hid;
+        anchor = y;
+      }
+      setHidden(hid);
       // Phones: once scrolled it's one solid bar, whatever is under it
       if (isPhone() && y > 24) {
         setTheme("dark");
