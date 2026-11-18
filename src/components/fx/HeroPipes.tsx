@@ -63,7 +63,7 @@ export function HeroPipes({ labels }: { labels: { open: string; closed: string }
           settle();
         },
         fail: (why) => {
-          // too slow for this computer: stills for the rest of the visit (retire runs on it)
+          // too slow for this computer: stills for this page load, and after two slow loads the visit (retire runs on it)
           perfLog(`hero: ${why}`);
           demote3D();
         },

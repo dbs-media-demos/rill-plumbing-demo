@@ -7,25 +7,37 @@
  *
  * It also keeps the 3D from ever stuttering: the scenes start one after another (`order`), each
  * when the browser is idle, and a scene that can't hold its frame rate (`watchFrames`) gives up
- * for the rest of the visit (`demote3D`), so the next scene starts as a still too.
+ * for this page load (`demote3D`), so the next scene starts as a still too. Two slow page loads
+ * keep the stills for the rest of the visit. One slow start (the GPU's first draw on a refresh)
+ * used to keep them for the whole tab (the old "rill:3d-off" flag, no longer read): on 18 Nov
+ * every refresh got the still.
  */
 export const DESKTOP_3D_QUERY = "(min-width: 1024px) and (hover: hover) and (pointer: fine)";
 
 const DEMOTED = "rill:3d-off";
+const SLOW_KEY = "rill:3d-slow";
+const SLOW_LIMIT = 2;
+
+// This page load ran slow (counted once)
+let slowHere = false;
 
 export function is3DDemoted() {
+  if (slowHere) return true;
   try {
-    return sessionStorage.getItem(DEMOTED) === "1";
+    return Number(sessionStorage.getItem(SLOW_KEY) || 0) >= SLOW_LIMIT;
   } catch {
     return false;
   }
 }
 
-/** This computer can't keep the 3D smooth: stills for the rest of the visit, starting with any scene that's live now. */
+/** This computer can't keep the 3D smooth: stills for this page load (two slow loads: the rest of the visit), starting with any scene that's live now. */
 export function demote3D() {
-  try {
-    sessionStorage.setItem(DEMOTED, "1");
-  } catch {}
+  if (!slowHere) {
+    slowHere = true;
+    try {
+      sessionStorage.setItem(SLOW_KEY, String(Number(sessionStorage.getItem(SLOW_KEY) || 0) + 1));
+    } catch {}
+  }
   window.dispatchEvent(new Event(DEMOTED));
 }
 
@@ -97,14 +109,17 @@ export function after3DGate(yes: () => Promise<void> | void, no?: () => void, or
 /**
  * Watches a scene's first 2 seconds of running frames. Call `frame(now)` from the render loop and
  * `pause()` whenever the loop stops (off screen, tab hidden), so the gap doesn't count. The first
- * few frames are warm-up and don't count either. Under ~45 fps on average, or one frame over
- * 100 ms after warm-up, it calls `fail` (once); after 2 good seconds it calls `pass`.
+ * few frames are warm-up and don't count either: they pay one-off costs (the GPU's first real draw
+ * took 371 ms on a refresh of a PC that then ran 112 fps, 18 Nov). Under ~45 fps on average, or a
+ * 3rd frame over 100 ms (or one over 400 ms) after warm-up, it calls `fail` (once): a hitch or two
+ * (a font, an image decode) isn't a slow computer. After 2 good seconds it calls `pass`.
  */
 export function watchFrames({ fail, pass }: { fail: (why: string) => void; pass: () => void }) {
-  const WARM = 4;
+  const WARM = 5;
   const WINDOW = 2000;
   let last = 0;
   let seen = 0;
+  let hitches = 0;
   let time = 0;
   let frames = 0;
   let done = false;
@@ -117,9 +132,9 @@ export function watchFrames({ fail, pass }: { fail: (why: string) => void; pass:
       const dt = last ? now - last : 0;
       last = now;
       if (!dt || ++seen <= WARM) return;
-      if (dt > 100) {
+      if (dt > 100 && (++hitches >= 3 || dt > 400)) {
         done = true;
-        return fail(`a ${Math.round(dt)} ms frame`);
+        return fail(`a ${Math.round(dt)} ms frame (hitch ${hitches})`);
       }
       time += dt;
       frames++;
