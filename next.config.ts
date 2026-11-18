@@ -11,6 +11,8 @@ const securityHeaders = [
 const noindex = process.env.NEXT_PUBLIC_NOINDEX !== "false";
 
 const nextConfig: NextConfig = {
+  // A second dev/test server can build into its own folder (NEXT_DIST_DIR=.next-dev) without touching the running one
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   poweredByHeader: false,
   experimental: {
     // Tailwind CSS is small; inlining removes the render-blocking stylesheet request (better FCP/LCP on first visit).

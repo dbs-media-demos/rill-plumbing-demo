@@ -4,6 +4,7 @@ import { BizProvider } from "@/components/preview/BizContext";
 import { PreviewGuard } from "@/components/preview/PreviewGuard";
 import { Translate, translateGateCss } from "@/components/preview/Translate";
 import { SiteChrome } from "@/components/layout/SiteChrome";
+import { LeadLoader } from "@/components/preview/LeadLoader";
 import { previewBiz } from "@/lib/preview";
 import { sr } from "@/i18n/sr";
 import { enPreview } from "@/i18n/en-preview";
@@ -22,6 +23,7 @@ export default async function PreviewLayout({ children, params }: { children: Re
   const dict = biz.lang === "sr" ? sr : enPreview;
   return (
     <BizProvider biz={biz}>
+      {biz.logo && <LeadLoader token={token} svg={biz.logo.svg} />}
       {(biz.lang === "sr" || Object.keys(dict).length > 0) && (
         <>
           <style>{translateGateCss}</style>

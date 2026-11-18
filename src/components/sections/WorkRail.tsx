@@ -118,7 +118,8 @@ export function WorkRail() {
             <div className="mt-4 flex items-start justify-between gap-4 phone:mt-2 phone:block">
               <div>
                 <h3 className="font-display text-xl font-semibold tracking-tight phone:text-[1.05rem] phone:leading-tight">{w.title}</h3>
-                <p className="text-sm text-slate">{biz.preview ? biz.area : w.place}</p>
+                {/* A preview that knows their towns spreads the jobs over them */}
+                <p className="text-sm text-slate">{biz.preview ? (biz.areas.length > 1 ? biz.areas[i % biz.areas.length] : biz.area) : w.place}</p>
               </div>
               <p className="max-w-[12rem] text-right text-sm text-slate phone:mt-0.5 phone:max-w-none phone:text-left phone:leading-snug">{w.note}</p>
             </div>

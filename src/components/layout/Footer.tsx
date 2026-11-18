@@ -1,11 +1,12 @@
 import Link from "@/components/ui/Link";
 import clsx from "clsx";
 import { Wordmark } from "@/components/brand/Logo";
+import { LeadLogo } from "@/components/brand/LeadLogo";
 import { services } from "@/content/services";
 import { cities } from "@/content/cities";
 import { site, mailHref, agencyName, agencyUrl } from "@/lib/site";
 import { defaultBiz } from "@/lib/biz";
-import { num, telOf, type Biz } from "@/lib/biz-core";
+import { areasFor, num, telOf, type Biz } from "@/lib/biz-core";
 import { Google, Star } from "@/components/ui/Icons";
 import { OpenBadge } from "./OpenBadge";
 import { ConceptNote } from "./ConceptNote";
@@ -27,6 +28,7 @@ export function Footer({ biz = defaultBiz }: { biz?: Biz }) {
       <div className="container-x pt-20 lg:pt-28 phone:pt-8">
         <div className="grid gap-12 lg:grid-cols-[1.3fr_2fr] phone:gap-6">
           <div>
+            {biz.logo && <LeadLogo svg={biz.logo.svg} label={biz.name} className="mb-8 h-14 max-w-full text-white phone:mb-4 phone:h-11" />}
             <p className="max-w-sm font-display text-3xl font-semibold leading-tight tracking-tight lg:text-4xl phone:text-2xl">
               Water where it <span className="accent text-spray">belongs.</span>
             </p>
@@ -63,7 +65,7 @@ export function Footer({ biz = defaultBiz }: { biz?: Biz }) {
               title="Service areas"
               links={
                 biz.preview
-                  ? [{ label: biz.area, href: "/service-areas" }]
+                  ? areasFor(biz).map((a) => ({ label: a, href: "/service-areas" }))
                   : [...cities.map((c) => ({ label: `${c.name}, TX`, href: `/service-areas/${c.slug}` })), { label: "All areas", href: "/service-areas" }]
               }
             />
@@ -105,7 +107,14 @@ export function Footer({ biz = defaultBiz }: { biz?: Biz }) {
       </div>
 
       <div className="pointer-events-none mt-12 h-[17vw] max-h-[16rem] select-none overflow-hidden text-white/[0.06] phone:hidden" aria-hidden>
-        <Wordmark className="mx-auto w-[46vw] max-w-[44rem]" drop="rgba(205,239,245,0.12)" />
+        {biz.logo ? (
+          // Their logo as the big watermark, ghosted like ours (its accent colour too)
+          <div className="flex justify-center pt-[1vw] text-white opacity-[0.07]">
+            <LeadLogo svg={biz.logo.svg} className="h-[13vw] max-h-[13rem] max-w-[80vw]" />
+          </div>
+        ) : (
+          <Wordmark className="mx-auto w-[46vw] max-w-[44rem]" drop="rgba(205,239,245,0.12)" />
+        )}
       </div>
     </footer>
   );
@@ -117,7 +126,7 @@ function FooterCol({ title, links, wide }: { title: string; links: { label: stri
       <h2 className="eyebrow text-spray">{title}</h2>
       <ul className={clsx("mt-5 space-y-2.5 phone:mt-2 phone:space-y-1 phone:text-[0.9rem] phone:leading-snug", wide && "phone:columns-2 phone:gap-x-4")}>
         {links.map((l) => (
-          <li key={l.href}>
+          <li key={l.label}>
             <Link href={l.href} className="text-white/80 transition-colors hover:text-white">
               {l.label}
             </Link>

@@ -64,7 +64,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-US" className={`${display.variable} ${sans.variable} ${serif.variable}`}>
+    <html lang="en-US" className={`${display.variable} ${sans.variable} ${serif.variable}`} suppressHydrationWarning>
       <body>
         <SmoothScroll />
         {/* Header, footer and the rest come from (site)/layout or for/[token]/layout (SiteChrome) */}

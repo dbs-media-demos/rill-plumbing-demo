@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import { useBiz } from "@/components/preview/BizContext";
+import { LeadLogo } from "./LeadLogo";
 
 /**
  * "rill" wordmark: the two l's are a single pipe that bends into a P-trap,
@@ -37,6 +38,15 @@ export function Mark({ className }: { className?: string }) {
 /** Full lockup: wordmark + small "plumbing co." label. */
 export function Logo({ className, tone = "dark" }: { className?: string; tone?: "dark" | "light" }) {
   const biz = useBiz();
+  // A preview with the business's own logo: theirs, in the header's ink (currentColor)
+  if (biz.logo)
+    return (
+      <LeadLogo
+        svg={biz.logo.svg}
+        label={biz.name}
+        className={clsx("h-9 max-w-[14rem] phone:h-8 phone:max-w-[11.5rem] sm:max-w-[17rem]", tone === "light" ? "text-white" : "text-abyss", className)}
+      />
+    );
   if (biz.preview) {
     // A real business: its name in the display face, with the droplet mark
     return (

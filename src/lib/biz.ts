@@ -21,4 +21,6 @@ export const defaultBiz: Biz = {
   hoursSummary: site.hours.office,
   rating: { value: site.rating, count: site.reviewCount },
   preview: false,
+  logo: null,
+  areas: [],
 };

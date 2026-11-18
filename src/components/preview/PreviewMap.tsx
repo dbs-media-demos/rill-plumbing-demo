@@ -27,6 +27,15 @@ export function PreviewMap({ biz }: { biz: Biz }) {
           </SplitReveal>
           {biz.address.full && <p className="mt-6 max-w-md text-lg text-slate phone:mt-3 phone:text-[0.98rem]">{biz.address.full}</p>}
           <Reveal className="mt-6 space-y-6 phone:mt-3 phone:space-y-3.5">
+            {biz.areas.length > 1 && (
+              <ul className="flex flex-wrap gap-2" aria-label={L(biz, "Areas we serve", "Gde radimo")}>
+                {biz.areas.map((a) => (
+                  <li key={a} className="rounded-full bg-white px-3.5 py-1.5 text-[0.92rem] font-medium text-abyss ring-1 ring-abyss/10">
+                    {a}
+                  </li>
+                ))}
+              </ul>
+            )}
             <OpenBadge />
             {biz.hours && (
               <dl className="grid max-w-sm grid-cols-[auto_1fr] gap-x-8 gap-y-1.5 phone:gap-y-0.5 phone:text-[0.92rem]">

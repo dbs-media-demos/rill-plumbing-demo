@@ -28,6 +28,10 @@ export type Biz = {
   rating: { value: number; count: number } | null;
   /** A personalised preview: other pages say "comes with the full site" */
   preview: boolean;
+  /** The business's own logo from the CRM (sanitised there; ink is currentColor), or null */
+  logo: { svg: string } | null;
+  /** Towns / neighbourhoods they serve, their own town first ([] = unknown: show only `area`) */
+  areas: string[];
 };
 
 export const telOf = (biz: Pick<Biz, "phone">) => (biz.phone ? `tel:${biz.phone}` : undefined);
@@ -111,6 +115,21 @@ export function openStatus(biz: Pick<Biz, "hours" | "timezone" | "lang">, date =
   return { open: false, text: sr ? "Zatvoreno" : "Closed" };
 }
 
+const logoOf = (v: unknown): Biz["logo"] => {
+  const svg = v && typeof v === "object" ? (v as { svg?: unknown }).svg : null;
+  return typeof svg === "string" && /^\s*<svg[\s>]/i.test(svg) ? { svg: svg.trim() } : null;
+};
+
+const areasOf = (v: unknown): string[] =>
+  Array.isArray(v) ? [...new Set(v.filter((a): a is string => typeof a === "string").map((a) => a.trim()).filter(Boolean))].slice(0, 8) : [];
+
+/** Their towns for lists: the CRM's areas, or just their own town. */
+export const areasFor = (biz: Pick<Biz, "areas" | "area">) => (biz.areas.length ? biz.areas : biz.area ? [biz.area] : []);
+
+/** "Plano, Frisco and Allen" / "Novi Sad, Futog i Veternik" */
+export const listOf = (biz: Pick<Biz, "lang">, items: string[]) =>
+  items.length < 2 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} ${biz.lang === "sr" ? "i" : "and"} ${items[items.length - 1]}`;
+
 /** What the CRM sends (GET /api/demos/public/<token>) → a preview Biz. */
 export function bizFromCrm(b: Record<string, unknown> & { address: Biz["address"] }, fallbackTz: string): Biz {
   const s = (v: unknown) => (typeof v === "string" ? v : "");
@@ -129,6 +148,8 @@ export function bizFromCrm(b: Record<string, unknown> & { address: Biz["address"
     hoursSummary: s(b.hoursSummary),
     rating: (b.rating as Biz["rating"]) ?? null,
     preview: true,
+    logo: logoOf(b.logo),
+    areas: areasOf(b.areas),
   };
 }
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { isPhone } from "@/lib/phone";
+import { whenLoaderDone } from "@/lib/loader";
 
 type Still = { src: string; srcSet?: string; sizes?: string };
 
@@ -14,7 +15,8 @@ type Still = { src: string; srcSet?: string; sizes?: string };
 export function HeroPhoneFade({ still }: { still: Still }) {
   const [phase, setPhase] = useState<"none" | "loading" | "shown">("none");
 
-  useEffect(() => {
+  // On a preview with the business's logo, the crossfade waits for the loader to leave
+  useEffect(() => whenLoaderDone(() => {
     if (!isPhone() || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let t = 0;
     const start = () => {
@@ -26,7 +28,7 @@ export function HeroPhoneFade({ still }: { still: Still }) {
       window.removeEventListener("load", start);
       window.clearTimeout(t);
     };
-  }, []);
+  }), []);
   useEffect(() => {
     if (phase !== "loading") return;
     const giveUp = window.setTimeout(() => setPhase("none"), 3500);

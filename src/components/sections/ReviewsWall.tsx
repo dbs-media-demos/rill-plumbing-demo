@@ -8,7 +8,7 @@ import { Counter, SplitReveal } from "@/components/ui/Reveal";
 import { WrenchDrip } from "@/components/fx/WrenchDrip";
 import { site } from "@/lib/site";
 import { defaultBiz } from "@/lib/biz";
-import type { Biz } from "@/lib/biz-core";
+import { areasFor, type Biz } from "@/lib/biz-core";
 
 export function ReviewCard({ r, className, area, job }: { r: Review; className?: string; area?: string; job?: boolean }) {
   const city = cityBySlug(r.city);
@@ -49,7 +49,7 @@ export function ReviewCard({ r, className, area, job }: { r: Review; className?:
   );
 }
 
-function Row({ items, reverse, speed, area }: { items: Review[]; reverse?: boolean; speed: string; area?: string }) {
+function Row({ items, reverse, speed, area }: { items: Review[]; reverse?: boolean; speed: string; area?: (r: Review) => string | undefined }) {
   return (
     <div className="marquee relative overflow-hidden">
       <div
@@ -57,7 +57,7 @@ function Row({ items, reverse, speed, area }: { items: Review[]; reverse?: boole
         style={{ ["--speed" as string]: speed, ["--dir" as string]: reverse ? "reverse" : "normal" }}
       >
         {[...items, ...items].map((r, i) => (
-          <ReviewCard key={`${r.name}-${i}`} r={r} area={area} className="w-[20rem] sm:w-[24rem]" />
+          <ReviewCard key={`${r.name}-${i}`} r={r} area={area?.(r)} className="w-[20rem] sm:w-[24rem]" />
         ))}
       </div>
     </div>
@@ -66,7 +66,9 @@ function Row({ items, reverse, speed, area }: { items: Review[]; reverse?: boole
 
 export function ReviewsWall({ biz = defaultBiz }: { biz?: Biz }) {
   const sr = biz.lang === "sr";
-  const area = biz.preview ? biz.area : undefined;
+  // A preview's reviews are from its own towns (spread over them when the CRM knows several)
+  const towns = areasFor(biz);
+  const area = (r: Review) => (biz.preview ? towns[reviews.indexOf(r) % towns.length] : undefined);
   const a = reviews.slice(0, 6);
   const b = reviews.slice(6);
   // Phones: the emergency jobs in full, the rest a swipe away
@@ -115,12 +117,12 @@ export function ReviewsWall({ biz = defaultBiz }: { biz?: Biz }) {
       <div className="container-x mt-3 hidden phone:block">
         <div className="space-y-2.5">
           {lead.map((r) => (
-            <ReviewCard key={r.name} r={r} area={area} job />
+            <ReviewCard key={r.name} r={r} area={area(r)} job />
           ))}
         </div>
         <div className="rail mt-2.5">
           {rest.map((r) => (
-            <ReviewCard key={r.name} r={r} area={area} job className="!h-auto w-[min(80vw,22rem)]" />
+            <ReviewCard key={r.name} r={r} area={area(r)} job className="!h-auto w-[min(80vw,22rem)]" />
           ))}
         </div>
       </div>

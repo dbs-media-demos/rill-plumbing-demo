@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { whenLoaderDone } from "@/lib/loader";
 
 type Labels = { open: string; closed: string; button: string; buttonClosed: string };
 
@@ -16,7 +17,8 @@ export function HeroRunValve({ labels }: { labels: Labels }) {
   const [open, setOpen] = useState(true);
   const [live, setLive] = useState(false);
 
-  useEffect(() => {
+  // After a preview's logo loader, whose exit starts the intro (it's paused behind it)
+  useEffect(() => whenLoaderDone(() => {
     const section = ref.current?.closest("section");
     if (!section) return;
     // Usable once the intro ends with the stream reaching the floor (straight away if it already has)
@@ -38,7 +40,7 @@ export function HeroRunValve({ labels }: { labels: Labels }) {
       delete section.dataset.live;
       delete section.dataset.valve;
     };
-  }, []);
+  }), []);
 
   const toggle = (at?: { x: number; y: number }) => {
     const section = ref.current?.closest("section");
