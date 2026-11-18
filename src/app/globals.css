@@ -669,6 +669,259 @@ input[type="range"].range::-moz-range-thumb {
   animation-timing-function: var(--ease-out-expo);
 }
 
+/* ───────────────────────────── v2 hero: the pipework plumbs itself (fx/HeroRun) ─────────────────────────────
+   No three.js on /v2. Intro (inner groups): the runs lay down, joints flash as they're sweated, the
+   parts go on, the lever turns, the needle climbs, the glass fills, the water pours, all by 2.9 s.
+   Valve state (outer groups) follows data-valve on the hero <section>. */
+
+.run-draw {
+  stroke-dasharray: 1 1;
+  animation: run-draw var(--t, 1s) cubic-bezier(0.42, 0.08, 0.45, 1) var(--d, 0s) backwards;
+}
+@keyframes run-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.run-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: run-pop 0.6s var(--ease-out-expo) var(--d, 0s) backwards;
+}
+@keyframes run-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+}
+.run-flash {
+  opacity: 0;
+  transform-box: view-box;
+  animation: run-flash 0.75s ease-out var(--d, 0s) both;
+  mix-blend-mode: screen;
+}
+@keyframes run-flash {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  22% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+/* the tag swings on its string, then settles */
+.run-tag {
+  transform-box: view-box;
+  transform-origin: 396px 120px;
+  animation: run-swing 1.8s var(--ease-out-expo) var(--d, 0s) backwards;
+}
+@keyframes run-swing {
+  0% {
+    opacity: 0;
+    transform: rotate(16deg);
+  }
+  12% {
+    opacity: 1;
+  }
+  35% {
+    transform: rotate(-7deg);
+  }
+  60% {
+    transform: rotate(3deg);
+  }
+  80% {
+    transform: rotate(-1deg);
+  }
+  100% {
+    transform: rotate(0);
+  }
+}
+
+/* the lever: open along the pipe, shut across it */
+.run-lever-state,
+.run-lever-in {
+  transform-box: view-box;
+  transform-origin: 400px 230px;
+}
+.run-lever-state {
+  transition: transform 0.75s var(--ease-liquid);
+}
+.run-lever-in {
+  animation: run-lever-open 0.7s var(--ease-liquid) 1.75s backwards;
+}
+@keyframes run-lever-open {
+  from {
+    transform: rotate(-90deg);
+  }
+}
+.run-lever {
+  transition: filter 0.25s;
+}
+[data-valve-hover] .run-lever {
+  filter: brightness(1.18) saturate(1.1);
+}
+
+/* the gauge needle: up to working pressure, a faint flutter while water runs */
+.run-needle-state,
+.run-needle-in,
+.run-needle-flutter {
+  transform-box: view-box;
+  transform-origin: 515px 390px;
+}
+.run-needle-state {
+  transition: transform 1.3s var(--ease-liquid) 0.2s;
+}
+.run-needle-in {
+  animation: run-needle-in 1.1s cubic-bezier(0.3, 0.7, 0.4, 1) 2s backwards;
+}
+@keyframes run-needle-in {
+  0% {
+    transform: rotate(var(--drop));
+  }
+  62% {
+    transform: rotate(7deg);
+  }
+  82% {
+    transform: rotate(-2.5deg);
+  }
+  100% {
+    transform: rotate(0);
+  }
+}
+.run-needle-flutter {
+  animation: run-flutter 1.4s ease-in-out 3.1s infinite alternate;
+}
+@keyframes run-flutter {
+  from {
+    transform: rotate(-0.8deg);
+  }
+  to {
+    transform: rotate(1deg);
+  }
+}
+
+/* the sight glass fills, and the water in it keeps moving down the line */
+.run-glass-state,
+.run-glass-in {
+  transform-box: view-box;
+}
+.run-glass-state {
+  transform-origin: 400px 658px;
+  transition: transform 0.9s cubic-bezier(0.3, 0.6, 0.3, 1);
+}
+.run-glass-in {
+  transform-origin: 400px 576px;
+  animation: run-fill 0.5s ease-out 2s backwards;
+}
+@keyframes run-fill {
+  from {
+    transform: scaleY(0);
+  }
+}
+.run-glass-flow {
+  animation: run-flow-22 0.42s linear infinite;
+}
+@keyframes run-flow-22 {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(22px);
+  }
+}
+
+/* the stream: pours at 2.25 s; shut the valve and it falls away, open it and it pours again */
+.run-stream-state,
+.run-stream-in {
+  transform-box: view-box;
+  transform-origin: 190px 903px;
+}
+.run-stream-state {
+  transition: transform 0.75s cubic-bezier(0.3, 0.6, 0.3, 1);
+}
+.run-stream-in {
+  animation: run-fill 0.6s cubic-bezier(0.5, 0, 0.75, 0.6) 2.25s backwards;
+}
+.run-stream-flow {
+  animation: run-flow-104 0.36s linear infinite;
+}
+@keyframes run-flow-104 {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(104px);
+  }
+}
+
+[data-valve="closed"] .run-lever-state {
+  transform: rotate(-90deg);
+  transition: transform 0.55s cubic-bezier(0.55, 0, 0.2, 1);
+}
+[data-valve="closed"] .run-needle-state {
+  transform: rotate(var(--drop));
+  transition: transform 1.2s cubic-bezier(0.3, 0.7, 0.3, 1) 0.25s;
+}
+[data-valve="closed"] .run-glass-state {
+  transform: scaleY(0);
+  transition: transform 1.1s cubic-bezier(0.5, 0, 0.5, 1) 0.2s;
+}
+[data-valve="closed"] .run-stream-state {
+  opacity: 0;
+  transform: translateY(160px);
+  transition:
+    transform 0.9s cubic-bezier(0.55, 0, 1, 0.45) 0.15s,
+    opacity 0.3s linear 0.75s;
+}
+[data-valve="opening"] .run-stream-state {
+  transform: scaleY(0);
+  transition: none;
+}
+[data-valve="closed"] :is(.run-needle-flutter, .run-glass-flow, .run-stream-flow) {
+  animation-play-state: paused;
+}
+
+/* the first scroll: the pipework drifts slower than the page, so it sits deeper than the words */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .run-par {
+      animation: run-par linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+  }
+}
+@keyframes run-par {
+  to {
+    transform: translate3d(0, 18vh, 0);
+  }
+}
+.run-live {
+  will-change: transform;
+}
+.run-hit:focus-visible rect {
+  stroke: var(--color-sunny);
+  stroke-width: 4;
+}
+.run-hit:focus {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .run,
+  .run * {
+    animation: none !important;
+  }
+}
+
 /* ───────────────────────────── phones ───────────────────────────── */
 
 @layer base {

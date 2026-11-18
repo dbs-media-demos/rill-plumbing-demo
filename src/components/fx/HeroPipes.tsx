@@ -3,10 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { after3DGate, demote3D, onDemoted, perfLog, watchFrames } from "@/lib/three-gate";
-import { isPhone } from "@/lib/phone";
 import type { HeroPipes as Scene } from "./pipes3d/heroScene";
-
-type Still = { src: string; srcSet?: string; sizes?: string };
 
 /**
  * The hero's 3D copper pipework (pipes3d/heroScene), fading in over the still rendered from the
@@ -18,17 +15,15 @@ type Still = { src: string; srcSet?: string; sizes?: string };
  * first 2 s of frames are watched, and on a computer that can't keep up the canvas fades back to
  * the still, the renderer is freed, and the rest of the visit stays on stills (lib/three-gate).
  *
- * Phones: zero bytes of three.js. The plumber photo is the first paint; once the page has loaded,
- * it crossfades once to the phone still of the same pipework (or not at all if that takes > 4 s).
+ * Phones: zero bytes of three.js; the photo-to-still crossfade is HeroPhoneFade.
  */
 /**
  * The scene's state is mirrored on the hero <section> for CSS: `data-live` once the canvas shows,
  * `data-valve="closed"` while the water is off (the trust row's hint reads them).
  */
-export function HeroPipes({ phoneStill, labels }: { phoneStill: Still; labels: { open: string; closed: string } }) {
+export function HeroPipes({ labels }: { labels: { open: string; closed: string } }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [live, setLive] = useState(false);
-  const [phase, setPhase] = useState<"none" | "loading" | "shown">("none");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -176,49 +171,11 @@ export function HeroPipes({ phoneStill, labels }: { phoneStill: Still; labels: {
     };
   }, [labels]);
 
-  // Phones: one crossfade from the photo to the still of the pipework, done within 5 s of load.
-  useEffect(() => {
-    if (!isPhone() || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let t = 0;
-    const start = () => {
-      t = window.setTimeout(() => setPhase("loading"), 500);
-    };
-    if (document.readyState === "complete") start();
-    else window.addEventListener("load", start, { once: true });
-    return () => {
-      window.removeEventListener("load", start);
-      window.clearTimeout(t);
-    };
-  }, []);
-  useEffect(() => {
-    if (phase !== "loading") return;
-    const giveUp = window.setTimeout(() => setPhase("none"), 3500);
-    return () => window.clearTimeout(giveUp);
-  }, [phase]);
-
   return (
-    <>
-      <canvas
-        ref={canvasRef}
-        aria-hidden
-        className={clsx("absolute inset-0 -z-20 h-full w-full transition-opacity duration-700 phone:hidden", live ? "opacity-100" : "opacity-0")}
-      />
-      {phase !== "none" && (
-        // eslint-disable-next-line @next/next/no-img-element -- srcSet comes from getImageProps on the server
-        <img
-          src={phoneStill.src}
-          srcSet={phoneStill.srcSet}
-          sizes={phoneStill.sizes}
-          alt=""
-          aria-hidden
-          decoding="async"
-          onLoad={() => setPhase((p) => (p === "loading" ? "shown" : p))}
-          className={clsx(
-            "absolute inset-x-0 top-0 -z-20 hidden h-[66%] w-full object-cover object-[50%_40%] transition-opacity duration-[900ms] phone:block",
-            phase === "shown" ? "opacity-100" : "opacity-0",
-          )}
-        />
-      )}
-    </>
+    <canvas
+      ref={canvasRef}
+      aria-hidden
+      className={clsx("absolute inset-0 -z-20 h-full w-full transition-opacity duration-700 phone:hidden", live ? "opacity-100" : "opacity-0")}
+    />
   );
 }

@@ -1,5 +1,7 @@
 import { getImageProps } from "next/image";
 import { HeroPipes } from "@/components/fx/HeroPipes";
+import { HeroPhoneFade } from "@/components/fx/HeroPhoneFade";
+import { HeroRun } from "@/components/fx/HeroRun";
 import { ConceptNote } from "@/components/layout/ConceptNote";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight, Google, Phone, Shield, Star } from "@/components/ui/Icons";
@@ -7,7 +9,13 @@ import { defaultBiz } from "@/lib/biz";
 import { L, num, telOf, type Biz } from "@/lib/biz-core";
 import { PHONE_MEDIA } from "@/lib/phone";
 
-export function HomeHero({ biz = defaultBiz }: { biz?: Biz }) {
+/** `/` gets the 3D copper pipework ("3d"); `/v2` the same hero without any 3D: the pipework plumbing itself in SVG ("flat"). */
+export type HeroKind = "3d" | "flat";
+
+// A transparent pixel: on /v2 the desktop has no still to load, the art is drawn in SVG
+const BLANK = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+
+export function HomeHero({ biz = defaultBiz, hero = "3d" }: { biz?: Biz; hero?: HeroKind }) {
   const sr = biz.lang === "sr";
   const longTitle = sr || (biz.tagline?.length ?? 0) > 22;
   // One <img>, two pictures: on desktop the still of the 3D pipework (rendered from the live scene by
@@ -28,20 +36,27 @@ export function HomeHero({ biz = defaultBiz }: { biz?: Biz }) {
   // The landscape photo is cropped to a portrait box, so it renders about 1.6 screens wide: ask for that to keep it sharp.
   const { props: phoneStill } = getImageProps({ src: "/images/plumber-under-sink.jpg", alt: "", fill: true, sizes: "160vw", quality: 60 });
 
+  // On /v2 the desktop loads no still at all (the pipework is drawn); phones get the photo either way
+  const desktopImg = hero === "3d" ? still : { src: BLANK, fetchPriority: still.fetchPriority, loading: still.loading, className: still.className };
+  const valveLabels = {
+    cursor: sr ? { open: "Zatvori", closed: "Pusti" } : { open: "Shut it", closed: "Open it" },
+    button: sr
+      ? { button: "Zatvorite vodu na glavnom ventilu", buttonClosed: "Pustite vodu ponovo" }
+      : { button: "Shut the water off at the main valve", buttonClosed: "Turn the water back on" },
+  };
+
   return (
     <section data-hero data-header="dark" className="group on-dark relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-abyss text-white phone:min-h-[min(calc(100svh-8.75rem),46rem)]">
       <picture>
         <source media={PHONE_MEDIA} srcSet={phoneStill.srcSet} sizes={phoneStill.sizes} />
-        <img {...still} alt="" />
+        <img {...desktopImg} alt="" />
       </picture>
-      <HeroPipes
-        phoneStill={{ src: pipesPhone.src, srcSet: pipesPhone.srcSet, sizes: pipesPhone.sizes }}
-        labels={
-          sr
-            ? { open: "Zatvori", closed: "Pusti" }
-            : { open: "Shut it", closed: "Open it" }
-        }
-      />
+      {hero === "3d" ? (
+        <HeroPipes labels={valveLabels.cursor} />
+      ) : (
+        <HeroRun sr={sr} labels={{ ...valveLabels.cursor, ...valveLabels.button }} />
+      )}
+      <HeroPhoneFade still={{ src: pipesPhone.src, srcSet: pipesPhone.srcSet, sizes: pipesPhone.sizes }} />
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(6,34,47,0.55)_0%,rgba(6,34,47,0)_28%,rgba(6,34,47,0.05)_55%,rgba(6,34,47,0.62)_100%)] phone:hidden"

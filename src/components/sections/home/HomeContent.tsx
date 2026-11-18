@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { PageShell } from "@/components/layout/PageShell";
-import { HomeHero } from "@/components/sections/home/HomeHero";
+import { HomeHero, type HeroKind } from "@/components/sections/home/HomeHero";
 import { DropletZoom } from "@/components/sections/home/DropletZoom";
 import { ProblemPicker } from "@/components/sections/ProblemPicker";
 import { ServicesList } from "@/components/sections/ServicesList";
@@ -74,26 +74,29 @@ function TrustStrip({ biz }: { biz: Biz }) {
 }
 
 /**
- * The homepage sections. The concept site renders them as they are; a personalised preview
+ * The homepage sections, shared by / (3D hero) and /v2 (`hero="flat"`, no three.js at all), so a
+ * change here lands in both. The concept site renders them as they are; a personalised preview
  * (/for/<token>) passes a real business: its name, phone, hours, rating and a map of its address
  * replace Rill's, and the North Dallas arrival map and area panels step aside.
  * The source order is the desktop's. On phones `phone:order-*` reads as an emergency call goes:
  * problems and services, who you're letting in, reviews, the fee, photos, the form, the FAQ.
  */
-export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; children?: ReactNode }) {
+export function HomeContent({ biz = defaultBiz, hero = "3d", children }: { biz?: Biz; hero?: HeroKind; children?: ReactNode }) {
+  // /v2 is this same page with no 3D anywhere: the SVG hero, and the Pipeline as its SVG version
+  const flat = hero === "flat";
   const statList = biz.preview ? previewStats(biz) : stats;
   return (
     <PageShell>
       {children}
       <div className="home-flow">
         <div className="phone:order-1">
-          <HomeHero biz={biz} />
+          <HomeHero biz={biz} hero={hero} />
         </div>
         <div className="phone:order-9">
           <DropletZoom />
         </div>
 
-        <Pipeline>
+        <Pipeline flat={flat}>
           <div className="phone:order-2">
             <ProblemPicker services={serviceLinks} />
           </div>
@@ -176,7 +179,7 @@ export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; childre
           <WorkRail />
         </div>
 
-        <Pipeline>
+        <Pipeline flat={flat}>
           <div className="phone:order-5">
             <ReviewsWall biz={biz} />
           </div>

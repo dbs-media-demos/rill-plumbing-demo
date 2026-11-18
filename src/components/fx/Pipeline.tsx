@@ -85,7 +85,8 @@ function lengthAt(map: Geometry["map"], y: number) {
   return map[map.length - 1].l;
 }
 
-export function Pipeline({ children }: { children: ReactNode }) {
+/** `flat`: the SVG pipe only, never the 3D one (/v2, the homepage without any three.js). */
+export function Pipeline({ children, flat = false }: { children: ReactNode; flat?: boolean }) {
   const wrap = useRef<HTMLDivElement>(null);
   const svg = useRef<SVGSVGElement>(null);
 
@@ -181,34 +182,31 @@ export function Pipeline({ children }: { children: ReactNode }) {
       s.style.visibility = "";
     };
     let hideSvg = 0;
-    const cancel3d = after3DGate(
-      async () => {
-        try {
-          const { pipeLayer } = await import("./pipes3d/pipeline");
-          const layer = await pipeLayer();
-          if (disposed) return;
-          pipe3d = layer.attach(el);
-          if (geo) pipe3d.setPath(geo.pieces);
-          render();
-          await layer.warm();
-          if (disposed) return;
-          layer.onFail(() => {
-            pipe3d?.dispose();
-            pipe3d = null;
-            showSvg();
-          });
-          if (!pipe3d) return; // gave up already
-        } catch {
-          return; // no fast WebGL: the SVG stays
-        }
-        // the 3D canvas fades in over 0.5 s; the SVG steps aside under it
-        s.style.transition = "opacity .5s";
-        s.style.opacity = "0";
-        hideSvg = window.setTimeout(() => (s.style.visibility = "hidden"), 500);
-      },
-      undefined,
-      1,
-    );
+    const run3d = async () => {
+      try {
+        const { pipeLayer } = await import("./pipes3d/pipeline");
+        const layer = await pipeLayer();
+        if (disposed) return;
+        pipe3d = layer.attach(el);
+        if (geo) pipe3d.setPath(geo.pieces);
+        render();
+        await layer.warm();
+        if (disposed) return;
+        layer.onFail(() => {
+          pipe3d?.dispose();
+          pipe3d = null;
+          showSvg();
+        });
+        if (!pipe3d) return; // gave up already
+      } catch {
+        return; // no fast WebGL: the SVG stays
+      }
+      // the 3D canvas fades in over 0.5 s; the SVG steps aside under it
+      s.style.transition = "opacity .5s";
+      s.style.opacity = "0";
+      hideSvg = window.setTimeout(() => (s.style.visibility = "hidden"), 500);
+    };
+    const cancel3d = flat ? () => {} : after3DGate(run3d, undefined, 1);
     return () => {
       disposed = true;
       cancel3d();
@@ -221,7 +219,7 @@ export function Pipeline({ children }: { children: ReactNode }) {
       window.clearTimeout(late);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [flat]);
 
   return (
     <div ref={wrap} className="pipeline relative">

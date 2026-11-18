@@ -84,6 +84,7 @@ export const sr: Record<string, string> = {
   "Shoe covers on.": "Navlake na cipele.",
   "Price agreed.": "Cena dogovorena.",
   "Water off.": "Voda zatvorena.",
+  "Main shut-off": "Glavni ventil",
   "Then we fix it.": "Pa tek onda popravka.",
   "Flat price before we touch a thing. Floors protected, mess cleaned, 1-year labor warranty on everything we do.":
     "Fiksna cena pre nego što bilo šta dotaknemo. Podovi zaštićeni, nered počišćen, godinu dana garancije na sve što uradimo.",
